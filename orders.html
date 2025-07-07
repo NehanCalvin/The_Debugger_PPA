@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order & Sales</title>
+  <link rel="stylesheet" href="order.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+  <div class="sidebar">
+    <a class="" href="#"><i class="fas fa-list-alt"></i> Orders</a>
+    <a class="active" href="orders.html"><i class="fas fa-plus-circle"></i> Create Order</a>
+    <a href="order&sales.html"><i class="fas fa-chart-line"></i> Orders & Sales</a>
+    <a href="#"><i class="fas fa-file-alt"></i> Reports</a>
+  </div>
+
+  <div class="content">
+    <h1>Order Management</h1>
+
+    <form id="orderForm" method="POST" action="save_order.php">
+      <section class="form-group">
+        <label for="invoice"><i class="fas fa-file-invoice"></i> PO Number</label>
+        <input type="text" id="invoice" name="invoice" required />
+
+        <label for="company"><i class="fas fa-building"></i> Company</label>
+        <input type="text" id="company" name="company" required />
+
+        <label for="client"><i class="fas fa-user"></i> Client Name</label>
+        <input type="text" id="client" name="client" required />
+
+        <label for="phone"><i class="fas fa-phone"></i> Phone</label>
+        <input type="text" id="phone" name="phone" required />
+        
+        <label for="quantity"><i class="fas fa-sort-numeric-up"></i> Quantity</label>
+        <input type="number" id="quantity" name="quantity" value="1" min="1" required />
+      </section>
+
+      <label for="sellingPrice"><i class="fas fa-tags"></i> Selling Price per Item (LKR)</label>
+      <input type="number" id="sellingPrice" name="selling_price" required />
+      <p class="order_price">🧾 Order Price: <span id="orderPrice">0.00</span> LKR</p>
+
+      <input type="hidden" id="fabric_data" name="fabric_data">
+      <input type="hidden" id="operations" name="operations">
+      <input type="hidden" id="total_price" name="total_price">
+
+      <section>
+        <br>
+        <h3>Fabric Items (Add and Save each)</h3>
+        <div id="fabricContainer" class="fabric-grid"></div>
+        <button type="button" class="add-btn" onclick="addFabricItem()">+ Add Item</button>
+        <div class="grand-total">Fabric Total: <span id="grandTotal">0.00</span> LKR</div>
+      </section>
+
+      <fieldset>
+        <legend>Operations (Fixed Price Per Piece)</legend>
+        <label><input type="checkbox" class="operation" value="cutting" /> Cutting (15)</label>
+        <label><input type="checkbox" class="operation" value="print" /> Print (30)</label>
+        <label><input type="checkbox" class="operation" value="embroidery" /> Embroidery (166)</label>
+        <label><input type="checkbox" class="operation" value="sublimation" /> Sublimation (25)</label>
+        <label><input type="checkbox" class="operation" value="stitch" /> Stitch (130)</label>
+        <label><input type="checkbox" class="operation" value="iron" /> Iron (40)</label>
+        <label><input type="checkbox" class="operation" value="washing" /> Washing (15)</label>
+      </fieldset>
+
+      <section class="summary">
+        <p>Breakdown:</p>
+        <ul id="operationBreakdown"></ul>
+        <p class="final-price">Total Price: <span id="total">0.00</span> LKR</p>
+      </section>
+
+      <section class="saved-items">
+        <h3>✔ Saved Fabric Items</h3>
+        <div id="savedFabricList"></div>
+      </section>
+
+      <p class="final-price">💰 Total Cost: <span id="totalCost">0.00</span> LKR</p>
+      <p class="final-price">💸 Total Selling Amount: <span id="totalSelling">0.00</span> LKR</p>
+      <p class="final-price">📈 Profit: <span id="profitAmount">0.00</span> LKR</p>
+      <p class="final-price">📊 Status: <span id="profitStatus">-</span></p>
+
+      <input type="hidden" id="profit" name="profit">
+      <input type="hidden" id="cost" name="cost">
+
+      <button type="submit" onclick="prepareFormBeforeSubmit()">Submit Order</button>
+    </form>
+  </div>
+
+  <script>
+    const quantityInput = document.getElementById('quantity');
+    const sellingInput = document.getElementById('sellingPrice');
+    const orderPriceDisplay = document.getElementById('orderPrice');
+
+    const operationCheckboxes = document.querySelectorAll('.operation');
+    const breakdownList = document.getElementById('operationBreakdown');
+    const totalSpan = document.getElementById('total');
+    const fabricContainer = document.getElementById('fabricContainer');
+    const grandTotal = document.getElementById('grandTotal');
+    const savedFabricList = document.getElementById('savedFabricList');
+
+    const operationPrices = {
+      cutting: 15,
+      print: 30,
+      embroidery: 166,
+      sublimation: 25,
+      stitch: 130,
+      iron: 40,
+      washing: 15,
+    };
+
+    let fabricCount = 0;
+
+    function calculateTotal() {
+      const quantity = parseInt(quantityInput.value) || 0;
+      const sellingPrice = parseFloat(sellingInput.value) || 0;
+
+      let opTotal = 0;
+      breakdownList.innerHTML = '';
+
+      operationCheckboxes.forEach((checkbox) => {
+        if (checkbox.checked) {
+          const price = operationPrices[checkbox.value];
+          opTotal += price * quantity;
+          breakdownList.innerHTML += `<li>${checkbox.value}: ${quantity} × ${price} = ${quantity * price} LKR</li>`;
+        }
+      });
+
+      const fabricCost = getFabricTotal();
+      const totalCost = opTotal + fabricCost;
+      const totalSelling = quantity * sellingPrice;
+      const profit = totalSelling - totalCost;
+      const status = profit >= 0 ? '✅ Profit' : '❌ Loss';
+
+      // Update all UI
+      totalSpan.textContent = totalCost.toFixed(2);
+      document.getElementById('totalCost').textContent = totalCost.toFixed(2);
+      document.getElementById('totalSelling').textContent = totalSelling.toFixed(2);
+      document.getElementById('profitAmount').textContent = profit.toFixed(2);
+      document.getElementById('profitStatus').textContent = status;
+      orderPriceDisplay.textContent = totalSelling.toFixed(2); // live order price
+
+      // Hidden inputs
+      document.getElementById('profit').value = profit;
+      document.getElementById('cost').value = totalCost;
+      document.getElementById('total_price').value = totalCost;
+    }
+
+    quantityInput.addEventListener('input', calculateTotal);
+    sellingInput.addEventListener('input', calculateTotal);
+    operationCheckboxes.forEach(cb => cb.addEventListener('change', calculateTotal));
+
+    function addFabricItem() {
+      fabricCount++;
+      const id = fabricCount;
+
+      const html = `
+        <div class="fabric-item" id="fabric-${id}">
+          <label>Item/Fabric</label>
+          <input type="text" name="itemName-${id}" required />
+          <label>Shop Name</label>
+          <input type="text" name="shopName-${id}" required />
+          <label>Bill ID</label>
+          <input type="text" name="billId-${id}" required />
+          <label>Fabric Quantity</label>
+          <input type="number" min="1" value="1" id="fabQty-${id}" oninput="calcFabricTotal(${id})" />
+          <label>Amount per Item</label>
+          <input type="number" min="0" value="0" id="fabAmt-${id}" oninput="calcFabricTotal(${id})" />
+          <label>Total</label>
+          <input type="text" id="fabTotal-${id}" readonly value="0.00" />
+          <button type="button" class="save-btn" onclick="saveFabricItem(${id})">✔ Save Item</button>
+        </div>`;
+      fabricContainer.insertAdjacentHTML('beforeend', html);
+    }
+
+    function calcFabricTotal(id) {
+      const qty = parseFloat(document.getElementById(`fabQty-${id}`).value) || 0;
+      const amt = parseFloat(document.getElementById(`fabAmt-${id}`).value) || 0;
+      document.getElementById(`fabTotal-${id}`).value = (qty * amt).toFixed(2);
+      updateGrandTotal();
+    }
+
+    function updateGrandTotal() {
+      const total = getFabricTotal();
+      grandTotal.textContent = total.toFixed(2);
+      calculateTotal();
+    }
+
+    function getFabricTotal() {
+      let sum = 0;
+      document.querySelectorAll('.fabric-item').forEach(div => {
+        const totalInput = div.querySelector('input[id^="fabTotal-"]');
+        if (totalInput) sum += parseFloat(totalInput.value) || 0;
+      });
+      const saved = JSON.parse(localStorage.getItem('savedFabrics')) || {};
+      for (const id in saved) sum += parseFloat(saved[id].total) || 0;
+      return sum;
+    }
+
+    function saveFabricItem(id) {
+      const div = document.getElementById(`fabric-${id}`);
+      const item = div.querySelector(`input[name="itemName-${id}"]`).value.trim();
+      const shop = div.querySelector(`input[name="shopName-${id}"]`).value.trim();
+      const bill = div.querySelector(`input[name="billId-${id}"]`).value.trim();
+      const qty = div.querySelector(`#fabQty-${id}`).value;
+      const amt = div.querySelector(`#fabAmt-${id}`).value;
+      const total = div.querySelector(`#fabTotal-${id}`).value;
+
+      if (item && shop && bill && qty && amt && total && parseFloat(total) > 0) {
+        const fabrics = JSON.parse(localStorage.getItem('savedFabrics')) || {};
+        fabrics[id] = { itemName: item, shopName: shop, billId: bill, qty, amt, total };
+        localStorage.setItem('savedFabrics', JSON.stringify(fabrics));
+        div.remove();
+        renderSavedFabricList();
+        updateGrandTotal();
+      } else {
+        alert("Fill all fields and ensure total > 0.");
+      }
+    }
+
+    function renderSavedFabricList() {
+      savedFabricList.innerHTML = '';
+      const fabrics = JSON.parse(localStorage.getItem('savedFabrics')) || {};
+      for (const id in fabrics) {
+        const fab = fabrics[id];
+        const card = document.createElement('div');
+        card.classList.add('saved-item-card');
+        card.innerHTML = `
+          <div class="saved-item-details">
+            <strong>${fab.itemName}</strong><br/>
+            Shop: ${fab.shopName} | Bill: ${fab.billId}<br/>
+            Qty: ${fab.qty} | Unit: ${fab.amt} | Total: <strong>${fab.total} LKR</strong>
+          </div>
+          <button class="delete-btn" onclick="deleteSavedFabric(${id})">❌</button>
+        `;
+        savedFabricList.appendChild(card);
+      }
+    }
+
+    function deleteSavedFabric(id) {
+      const fabrics = JSON.parse(localStorage.getItem('savedFabrics')) || {};
+      delete fabrics[id];
+      localStorage.setItem('savedFabrics', JSON.stringify(fabrics));
+      renderSavedFabricList();
+      updateGrandTotal();
+    }
+
+    function prepareFormBeforeSubmit() {
+      const fabrics = JSON.parse(localStorage.getItem('savedFabrics')) || {};
+      document.getElementById('fabric_data').value = JSON.stringify(fabrics);
+      const ops = [...document.querySelectorAll('.operation:checked')].map(cb => cb.value);
+      document.getElementById('operations').value = ops.join(',');
+    }
+
+    window.onload = () => {
+      renderSavedFabricList();
+      addFabricItem();
+      calculateTotal();
+    };
+    
+  </script>
+</body>
+</html>

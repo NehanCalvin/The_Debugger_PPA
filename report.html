@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Order & Sales Report</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+</head>
+<body class="bg-white p-6 text-gray-800">
+  <h1 class="text-3xl font-bold mb-4">📄 Order & Sales Report</h1>
+
+  <!-- Filter Controls -->
+  <div class="flex flex-wrap gap-4 mb-6">
+    <select id="filterType" class="border rounded px-4 py-2">
+      <option value="all">All</option>
+      <option value="month">Monthly</option>
+      <option value="year">Yearly</option>
+    </select>
+    <input type="month" id="monthPicker" class="border rounded px-4 py-2 hidden" />
+    <input type="number" id="yearPicker" min="2000" max="2099" step="1" class="border rounded px-4 py-2 hidden" placeholder="Enter Year" />
+
+    <!-- Export Buttons -->
+    <button onclick="exportToExcel()" class="bg-green-500 text-white px-4 py-2 rounded">Export to Excel</button>
+    <button onclick="exportToPDF()" class="bg-red-500 text-white px-4 py-2 rounded">Export to PDF</button>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+    <div class="bg-green-100 p-4 rounded shadow text-lg" id="incomeCard">💰 Total Income: LKR 0</div>
+    <div class="bg-red-100 p-4 rounded shadow text-lg" id="expenseCard">📉 Total Cost: LKR 0</div>
+    <div class="bg-blue-100 p-4 rounded shadow text-lg" id="profitCard">📈 Profit: LKR 0</div>
+  </div>
+
+  <!-- Chart -->
+  <div class="bg-white p-4 rounded shadow mb-6">
+    <canvas id="profitChart"></canvas>
+  </div>
+
+  <!-- Orders Table -->
+  <div class="overflow-x-auto">
+    <table id="reportTable" class="min-w-full bg-white shadow rounded-lg">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="py-2 px-4 text-left">Invoice</th>
+          <th class="py-2 px-4 text-left">Company</th>
+          <th class="py-2 px-4 text-left">Client</th>
+          <th class="py-2 px-4 text-left">Phone</th>
+          <th class="py-2 px-4 text-left">Quantity</th>
+          <th class="py-2 px-4 text-left">Cost (LKR)</th>
+          <th class="py-2 px-4 text-left">Selling (LKR)</th>
+          <th class="py-2 px-4 text-left">Profit (LKR)</th>
+          <th class="py-2 px-4 text-left">Status</th>
+        </tr>
+      </thead>
+      <tbody id="reportTableBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    let totalIncome = 0;
+    let totalCost = 0;
+    let totalProfit = 0;
+    let chart;
+
+    document.getElementById("filterType").addEventListener("change", function () {
+      document.getElementById("monthPicker").classList.add("hidden");
+      document.getElementById("yearPicker").classList.add("hidden");
+      if (this.value === "month") {
+        document.getElementById("monthPicker").classList.remove("hidden");
+      } else if (this.value === "year") {
+        document.getElementById("yearPicker").classList.remove("hidden");
+      }
+      loadReportData();
+    });
+
+    document.getElementById("monthPicker").addEventListener("change", loadReportData);
+    document.getElementById("yearPicker").addEventListener("input", loadReportData);
+
+    async function loadReportData() {
+      totalIncome = 0;
+      totalCost = 0;
+      totalProfit = 0;
+
+      try {
+        const res = await fetch('fetch_orders.php');
+        const orders = await res.json();
+        const tableBody = document.getElementById("reportTableBody");
+        tableBody.innerHTML = "";
+
+        const filterType = document.getElementById("filterType").value;
+        const monthVal = document.getElementById("monthPicker").value;
+        const yearVal = document.getElementById("yearPicker").value;
+
+        const filteredOrders = orders.filter(order => {
+          const orderDate = new Date(order.date);
+          if (filterType === "month" && monthVal) {
+            const [year, month] = monthVal.split("-");
+            return (
+              orderDate.getFullYear() === parseInt(year) &&
+              orderDate.getMonth() + 1 === parseInt(month)
+            );
+          }
+          if (filterType === "year" && yearVal) {
+            return orderDate.getFullYear() === parseInt(yearVal);
+          }
+          return true;
+        });
+
+        filteredOrders.forEach(order => {
+          const sellingTotal = order.selling_price * order.quantity;
+          const profit = parseFloat(order.profit);
+          totalIncome += sellingTotal;
+          totalCost += parseFloat(order.cost);
+          totalProfit += profit;
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td class="py-2 px-4">${order.invoice}</td>
+            <td class="py-2 px-4">${order.company}</td>
+            <td class="py-2 px-4">${order.client}</td>
+            <td class="py-2 px-4">${order.phone}</td>
+            <td class="py-2 px-4">${order.quantity}</td>
+            <td class="py-2 px-4">${order.cost}</td>
+            <td class="py-2 px-4">${sellingTotal.toFixed(2)}</td>
+            <td class="py-2 px-4 ${profit >= 0 ? 'text-green-600' : 'text-red-600'}">${profit}</td>
+            <td class="py-2 px-4">${order.full_paid == 1 ? 'Full Paid' : order.advanced_paid == 1 ? 'Advance Paid' : 'Unpaid'}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+
+        document.getElementById("incomeCard").textContent = `💰 Total Income: LKR ${totalIncome.toLocaleString()}`;
+        document.getElementById("expenseCard").textContent = `📉 Total Cost: LKR ${totalCost.toLocaleString()}`;
+        document.getElementById("profitCard").textContent = `📈 Profit: LKR ${totalProfit.toLocaleString()}`;
+
+        renderChart();
+      } catch (err) {
+        console.error("Failed to load report data", err);
+      }
+    }
+
+    function renderChart() {
+      const ctx = document.getElementById("profitChart").getContext("2d");
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["Total Income", "Total Cost", "Profit"],
+          datasets: [
+            {
+              label: "LKR",
+              data: [totalIncome, totalCost, totalProfit],
+              backgroundColor: ["#4ade80", "#f87171", "#60a5fa"]
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    function exportToExcel() {
+      const table = document.getElementById("reportTable");
+      const workbook = XLSX.utils.table_to_book(table, { sheet: "Report" });
+      XLSX.writeFile(workbook, "Order_Sales_Report.xlsx");
+    }
+
+    async function exportToPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text("Order & Sales Report", 10, 10);
+
+      const table = document.getElementById("reportTable");
+      const rows = Array.from(table.querySelectorAll("tbody tr")).map(row =>
+        Array.from(row.querySelectorAll("td")).map(cell => cell.textContent.trim())
+      );
+
+      const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
+      doc.autoTable({ head: [headers], body: rows, startY: 20 });
+      doc.save("Order_Sales_Report.pdf");
+    }
+
+    window.onload = loadReportData;
+  </script>
+</body>
+</html>

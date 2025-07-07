@@ -1,0 +1,108 @@
+/* Reset + Base Styling */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #212121;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+                    url("kevin-limbri-mBXQCNKbq7E-unsplash.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  backdrop-filter: blur(3px);
+}
+
+/* Login Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  padding: 2em;
+  background-color: rgba(23, 23, 23, 0.9);
+  border-radius: 25px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+  transition: transform 0.4s ease-in-out;
+}
+
+.form:hover {
+  transform: scale(1.05);
+  border: 1px solid #333;
+}
+
+#heading {
+  text-align: center;
+  margin-bottom: 1.5em;
+  color: #ffffff;
+  font-size: 1.6em;
+  font-weight: 600;
+}
+
+/* Input Fields */
+.field {
+  display: flex;
+  align-items: center;
+  background-color: #1f1f1f;
+  border-radius: 12px;
+  padding: 0.7em 1em;
+  margin-bottom: 1em;
+  box-shadow: inset 2px 5px 10px #050505;
+}
+
+.input-icon {
+  width: 1.3em;
+  height: 1.3em;
+  fill: #ffffff;
+  margin-right: 0.5em;
+}
+
+.input-field {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: #d3d3d3;
+  font-size: 1em;
+}
+
+/* Buttons */
+.btn {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1em;
+}
+
+.button1,
+.button2,
+.button3 {
+  padding: 0.6em 1em;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  background-color: #252525;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  font-size: 0.9em;
+}
+
+.button1:hover,
+.button2:hover {
+  background-color: #000000;
+}
+
+.button3 {
+  width: 100%;
+  margin-top: 1em;
+}
+
+.button3:hover {
+  background-color: crimson;
+}

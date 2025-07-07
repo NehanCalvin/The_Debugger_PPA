@@ -1,0 +1,325 @@
+<!-- <!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <title>Employee Management Report</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+    rel="stylesheet"
+  />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <style>
+
+    .collapse-row {
+      transition: all 0.3s ease;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 p-8 text-gray-900 font-sans">
+
+  <header class="mb-8">
+    <h1 class="text-4xl font-bold text-gray-800 mb-1">👥 Employee Management Report</h1>
+    <p class="text-gray-600">Click the ▶️ icon to view bank details</p>
+  </header>
+
+
+  <div class="flex flex-wrap gap-4 mb-6">
+    <button
+      onclick="exportToExcel()"
+      class="bg-blue-600 hover:bg-blue-700 transition text-white font-semibold px-5 py-2 rounded shadow"
+    >
+      Export to Excel
+    </button>
+    <button
+      onclick="exportToPDF()"
+      class="bg-red-600 hover:bg-red-700 transition text-white font-semibold px-5 py-2 rounded shadow"
+    >
+      Export to PDF
+    </button>
+  </div>
+
+
+  <div class="overflow-x-auto rounded-lg shadow-lg bg-white">
+    <table
+      id="employeeTable"
+      class="min-w-full divide-y divide-gray-200"
+    >
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider"></th>
+          <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Employee Name</th>
+          <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Address</th>
+          <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Phone</th>
+          <th class="px-4 py-3 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Job Role</th>
+        </tr>
+      </thead>
+      <tbody id="employeeTableBody" class="divide-y divide-gray-100"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const employees = [
+      {
+        name: "Amal Perera",
+        address: "No. 12, Flower Road, Colombo",
+        phone: "+94 77 123 4567",
+        role: "Software Engineer",
+        bank: {
+          name: "Sampath Bank",
+          branch: "Colombo 7",
+          accountNo: "1234567890",
+          holder: "Amal Perera"
+        }
+      },
+      {
+        name: "Nimali Fernando",
+        address: "45/3, Galle Road, Colombo",
+        phone: "+94 71 987 6543",
+        role: "Project Manager",
+        bank: {
+          name: "Commercial Bank",
+          branch: "Bambalapitiya",
+          accountNo: "9876543210",
+          holder: "Nimali Fernando"
+        }
+      },
+      {
+        name: "Kamal Silva",
+        address: "78, Kandy Road, Peradeniya",
+        phone: "+94 75 222 3333",
+        role: "HR Executive",
+        bank: {
+          name: "Hatton National Bank",
+          branch: "Peradeniya",
+          accountNo: "4567891230",
+          holder: "Kamal Silva"
+        }
+      },
+      {
+        name: "Samantha Jayasuriya",
+        address: "23, Main Street, Negombo",
+        phone: "+94 76 555 6666",
+        role: "Accountant",
+        bank: {
+          name: "People's Bank",
+          branch: "Negombo",
+          accountNo: "7891234560",
+          holder: "Samantha Jayasuriya"
+        }
+      },
+      {
+        name: "Thilina Rajapaksha",
+        address: "15, Lake Road, Nugegoda",
+        phone: "+94 72 444 5555",
+        role: "Quality Analyst",
+        bank: {
+          name: "Nations Trust Bank",
+          branch: "Nugegoda",
+          accountNo: "3216549870",
+          holder: "Thilina Rajapaksha"
+        }
+      },
+      {
+        name: "Hiran Weerasinghe",
+        address: "9, High Street, Galle",
+        phone: "+94 70 333 2222",
+        role: "Support Specialist",
+        bank: {
+          name: "DFCC Bank",
+          branch: "Galle",
+          accountNo: "6549873210",
+          holder: "Hiran Weerasinghe"
+        }
+      }
+    ];
+
+    function toggleBankDetails(id) {
+      const row = document.getElementById(`bank-row-${id}`);
+      if (row.style.display === "table-row") {
+        row.style.display = "none";
+      } else {
+        row.style.display = "table-row";
+      }
+    }
+
+    function loadEmployeeData() {
+      const tbody = document.getElementById("employeeTableBody");
+      tbody.innerHTML = "";
+
+      employees.forEach((emp, i) => {
+
+        const tr = document.createElement("tr");
+        tr.classList.add("hover:bg-gray-50", "transition-colors");
+        tr.innerHTML = `
+          <td class="px-4 py-3 whitespace-nowrap text-sm text-center cursor-pointer select-none" onclick="toggleBankDetails(${i})" title="Toggle Bank Details">
+            <svg class="w-5 h-5 inline-block text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm">${emp.name}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm">${emp.address}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm">${emp.phone}</td>
+          <td class="px-4 py-3 whitespace-nowrap text-sm">${emp.role}</td>
+        `;
+        tbody.appendChild(tr);
+
+
+        const bankTr = document.createElement("tr");
+        bankTr.id = `bank-row-${i}`;
+        bankTr.style.display = "none";
+        bankTr.classList.add("bg-gray-50");
+
+        bankTr.innerHTML = `
+          <td colspan="5" class="px-6 py-4 text-sm text-gray-700">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div><strong>Bank Name:</strong> ${emp.bank.name}</div>
+              <div><strong>Branch:</strong> ${emp.bank.branch}</div>
+              <div><strong>Account No:</strong> ${emp.bank.accountNo}</div>
+              <div><strong>Account Holder:</strong> ${emp.bank.holder}</div>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(bankTr);
+      });
+    }
+
+    function exportToExcel() {
+
+      const tempTable = document.createElement('table');
+      tempTable.style.display = 'none';
+
+
+      tempTable.innerHTML = `
+        <thead>
+          <tr>
+            <th>Employee Name</th>
+            <th>Address</th>
+            <th>Phone</th>
+            <th>Job Role</th>
+            <th>Bank Name</th>
+            <th>Branch</th>
+            <th>Account No</th>
+            <th>Account Holder</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${employees.map(emp => `
+            <tr>
+              <td>${emp.name}</td>
+              <td>${emp.address}</td>
+              <td>${emp.phone}</td>
+              <td>${emp.role}</td>
+              <td>${emp.bank.name}</td>
+              <td>${emp.bank.branch}</td>
+              <td>${emp.bank.accountNo}</td>
+              <td>${emp.bank.holder}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      `;
+
+      document.body.appendChild(tempTable);
+      const workbook = XLSX.utils.table_to_book(tempTable, { sheet: "Employees" });
+      XLSX.writeFile(workbook, "Employee_Report.xlsx");
+      document.body.removeChild(tempTable);
+    }
+
+    function exportToPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('l', 'pt', 'a4'); 
+
+      doc.setFontSize(18);
+      doc.text("Employee Management Report", 40, 40);
+
+    
+      const headers = ["Employee Name", "Address", "Phone", "Job Role", "Bank Name", "Branch", "Account No", "Account Holder"];
+      const rows = employees.map(emp => [
+        emp.name,
+        emp.address,
+        emp.phone,
+        emp.role,
+        emp.bank.name,
+        emp.bank.branch,
+        emp.bank.accountNo,
+        emp.bank.holder,
+      ]);
+
+      doc.autoTable({
+        head: [headers],
+        body: rows,
+        startY: 60,
+        styles: { fontSize: 9, cellPadding: 3 },
+        headStyles: { fillColor: [59, 130, 246] },
+        alternateRowStyles: { fillColor: [240, 244, 255] },
+        margin: { left: 40, right: 40 }
+      });
+
+      doc.save("Employee_Report.pdf");
+    }
+
+    window.onload = loadEmployeeData;
+  </script>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Employee Cards</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-10 font-sans">
+
+  <h1 class="text-3xl font-bold mb-8 text-gray-800">👥 Employee Management Overview</h1>
+
+  <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
+    <!-- Employee Card -->
+    <div class="bg-white shadow-lg rounded-2xl p-6 flex flex-col md:flex-row gap-6">
+      <!-- Employee Info -->
+      <div class="w-full md:w-1/2">
+        <h2 class="text-xl font-semibold text-blue-700 mb-2">🧍 Employee Details</h2>
+        <p><span class="font-medium text-gray-700">Name:</span> Amal Perera</p>
+        <p><span class="font-medium text-gray-700">Job Role:</span> Software Engineer</p>
+        <p><span class="font-medium text-gray-700">Phone:</span> +94 77 123 4567</p>
+        <p><span class="font-medium text-gray-700">Address:</span> No. 12, Flower Road, Colombo</p>
+      </div>
+
+      <!-- Bank Info -->
+      <div class="w-full md:w-1/2 border-t md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0 border-gray-200">
+        <h2 class="text-xl font-semibold text-green-700 mb-2">🏦 Bank Details</h2>
+        <p><span class="font-medium text-gray-700">Bank Name:</span> Sampath Bank</p>
+        <p><span class="font-medium text-gray-700">Branch:</span> Colombo 7</p>
+        <p><span class="font-medium text-gray-700">Account No:</span> 1234567890</p>
+        <p><span class="font-medium text-gray-700">Account Holder:</span> Amal Perera</p>
+      </div>
+    </div>
+
+    <!-- Duplicate this card for other employees -->
+    <div class="bg-white shadow-lg rounded-2xl p-6 flex flex-col md:flex-row gap-6">
+      <div class="w-full md:w-1/2">
+        <h2 class="text-xl font-semibold text-blue-700 mb-2">🧍 Employee Details</h2>
+        <p><span class="font-medium text-gray-700">Name:</span> Nimali Fernando</p>
+        <p><span class="font-medium text-gray-700">Job Role:</span> Project Manager</p>
+        <p><span class="font-medium text-gray-700">Phone:</span> +94 71 987 6543</p>
+        <p><span class="font-medium text-gray-700">Address:</span> 45/3, Galle Road, Colombo</p>
+      </div>
+      <div class="w-full md:w-1/2 border-t md:border-t-0 md:border-l md:pl-6 pt-4 md:pt-0 border-gray-200">
+        <h2 class="text-xl font-semibold text-green-700 mb-2">🏦 Bank Details</h2>
+        <p><span class="font-medium text-gray-700">Bank Name:</span> Commercial Bank</p>
+        <p><span class="font-medium text-gray-700">Branch:</span> Bambalapitiya</p>
+        <p><span class="font-medium text-gray-700">Account No:</span> 9876543210</p>
+        <p><span class="font-medium text-gray-700">Account Holder:</span> Nimali Fernando</p>
+      </div>
+    </div>
+
+    <!-- Add more cards below for more employees -->
+  </div>
+
+</body>
+</html>

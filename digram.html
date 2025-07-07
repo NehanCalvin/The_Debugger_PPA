@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Garment Factory ER Diagram</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .mermaid {
+            background: white;
+            padding: 20px;
+            overflow: auto;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Garment Factory ER Diagram with Detailed Employee Structure</h1>
+        <div class="mermaid">
+            erDiagram
+            %% Main Entities
+            CUSTOMERS {
+                string CustomerID PK
+                string Name
+                string Email
+                string Address
+                string PhoneNumber
+            }
+            
+            ORDERS {
+                string OrderID PK
+                string Status
+                date OrderDate
+                string CustomerID FK
+            }
+            
+            ORDER_DETAILS {
+                string OrderID FK
+                string ProductID FK
+                int Quantity
+                decimal UnitPrice
+            }
+            
+            PRODUCTS {
+                string ProductID PK
+                string Description
+                string Status
+                string Group
+                int Quantity
+            }
+            
+            %% Enhanced Employee Entity with name separation
+            EMPLOYEES {
+                string EmployeeID PK
+                string Fname
+                string Lname
+                string Role
+                decimal Salary
+                string Email
+                string PhoneNumber
+                date HireDate
+            }
+            
+            ADVERTISEMENTS {
+                string AdID PK
+                date StartDate
+                date EndDate
+                string Status
+                decimal Budget
+            }
+            
+            %% Relationships
+            CUSTOMERS ||--o{ ORDERS : "Places"
+            ORDERS ||--|{ ORDER_DETAILS : "Contains"
+            ORDER_DETAILS }|--|| PRODUCTS : "References"
+            EMPLOYEES }o--o{ ORDERS : "Manages"
+            ADVERTISEMENTS }o--o{ PRODUCTS : "Promotes"
+            
+            %% Styling for clarity
+            class CUSTOMERS,ORDERS,EMPLOYEES,ADVERTISEMENTS,PRODUCTS,ORDER_DETAILS {
+                font-size: 14px
+                padding: 12px
+                margin: 5px
+            }
+            
+            %% Highlight the enhanced employee structure
+            note for EMPLOYEES "Employee names now split into:\n- Fname (First name)\n- Lname (Last name)\nfor better data organization"
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            er: {
+                fontSize: 14,
+                useMaxWidth: true,
+                diagramPadding: 20,
+                layoutDirection: 'TB',
+            },
+            themeCSS: `
+                .er.entityBox {
+                    stroke: #333;
+                    fill: #f8f9fa;
+                }
+                .er.attributeBoxEven {
+                    fill: #e9ecef;
+                }
+                .er.attributeBoxOdd {
+                    fill: #f8f9fa;
+                }
+            `
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sitch Coporate Clothing</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div id="splash-screen">
+        <div class="splash-content">
+            <h1 id="company-name">
+                <span class="word">S</span>
+                <span class="word">T</span>
+                <span class="word">I</span>
+                <span class="word">T</span>
+                <span class="word">C</span>
+                <span class="word">H</span>
+                <br />
+                <span class="word">C</span>
+                <span class="word">O</span>
+                <span class="word">R</span>
+                <span class="word">P</span>
+                <span class="word">O</span>
+                <span class="word">R</span>
+                <span class="word">A</span>
+                <span class="word">T</span>
+                <span class="word">E</span>
+                <br />
+                <span class="word">C</span>
+                <span class="word">L</span>
+                <span class="word">O</span>
+                <span class="word">T</span>
+                <span class="word">H</span>
+                <span class="word">I</span>
+                <span class="word">N</span>
+                <span class="word">G</span>
+              </h1>
+              
+        </div>
+    </div>
+  
+
+</body>
+
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const letters = document.querySelectorAll('.word');
+    letters.forEach((letter, index) => {
+      letter.style.animationDelay = `${index * 0.08}s`; // nice stagger effect
+    });
+
+    // Redirect to login.html after 6s
+    setTimeout(() => {
+      window.location.href = "login.html";
+    }, 6000);
+  });
+</script>
+// Adjust delay as needed
+
+</html>

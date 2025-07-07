@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="admin.css" />
+  <title>Admin Panel</title>
+</head>
+<body>
+  <!-- Loader -->
+  <div class="loader" id="loader"></div>
+
+  <!-- Main Content (initially hidden) -->
+  <div class="main-content" id="main-content" style="display: none;">
+    <header>
+      <button onclick="location.href='orders.html'">
+        <i class="fa-solid fa-calendar"></i> Order & Sales
+      </button>
+      <button onclick="location.href='products.html'">
+        <i class="fa-solid fa-boxes-stacked"></i> Product Management
+      </button>
+      <button onclick="location.href='employees.html'">
+        <i class="fa-solid fa-users-gear"></i> Employee Management
+      </button>
+      <button onclick="location.href='inventory.html'">
+        <i class="fa-solid fa-warehouse"></i> Raw Material Inventory
+      </button>
+      <button onclick="location.href='feedback.html'">
+        <i class="fa-solid fa-comments"></i> Feedback & Quality Control
+      </button>
+      <button onclick="location.href='transport.html'">
+        <i class="fa-solid fa-car"></i> Transport Details
+      </button>
+    </header>
+  </div>
+
+  <script>
+    // Hide loader after window fully loads
+    window.addEventListener("load", function () {
+      const loader = document.getElementById("loader");
+      const content = document.getElementById("main-content");
+
+      loader.style.display = "none";
+      content.style.display = "flex"; // match flex from body styles
+    });
+  </script>
+</body>
+</html>

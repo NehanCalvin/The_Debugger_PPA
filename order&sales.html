@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Orders & Sales</title>
+  <link rel="stylesheet" href="order&sales.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+  <div class="sidebar">
+    <a href="orders.html"><i class="fas fa-plus-circle"></i> Create Order</a>
+    <a class="active" href="#"><i class="fas fa-chart-line"></i> Orders & Sales</a>
+    <a href="report.html"><i class="fas fa-file-alt"></i> Reports</a>
+  </div>
+
+  <input type="text" id="searchBox" placeholder="🔍 Search by Invoice or Company..." />
+  <br><br>
+
+  <div class="content">
+    <br><br>
+    <h1>📋 Orders & Sales</h1>
+    <div id="confirmationMessage"></div>
+    <div id="ordersContainer">Loading orders...</div>
+  </div>
+
+  <script>
+    if (window.location.search.includes("submitted=true")) {
+      localStorage.removeItem("savedFabrics");
+      document.getElementById("confirmationMessage").innerHTML = "<p>Order submitted successfully!</p>";
+    }
+
+    document.getElementById('searchBox').addEventListener('input', function () {
+      loadOrders(this.value);
+    });
+
+    async function loadOrders(search = "") {
+      try {
+        const res = await fetch('fetch_orders.php?search=' + encodeURIComponent(search));
+        const orders = await res.json();
+
+        const container = document.getElementById('ordersContainer');
+        container.innerHTML = '';
+
+        if (orders.length === 0) {
+          container.innerHTML = '<p>No orders found.</p>';
+          return;
+        }
+
+        orders.forEach(order => {
+          const card = document.createElement('div');
+          card.className = 'order-card';
+
+          card.innerHTML = `
+            <h3>🏢 ${order.company}</h3>
+            <p><strong>🧾 Invoice:</strong> ${order.invoice}</p>
+            <p><strong>👤 Client:</strong> ${order.client} | <strong>📞 Phone:</strong> ${order.phone}</p>
+            <p><strong>🔢 Quantity:</strong> ${order.quantity}</p>
+
+            <p><strong>⚙️ Operations:</strong><br>
+              ${(order.operations || '')
+                .split(',')
+                .map(op => `<span class="tag">${op}</span>`)
+                .join('')}
+            </p>
+
+            <h4>🧵 Fabric Items</h4>
+            <ul>
+              ${(order.fabrics || []).map(fab => `
+                <li>
+                  <strong>${fab.itemName}</strong> - Qty: ${fab.qty}, Unit: ${fab.amt} LKR, 
+                  Total: <strong>${fab.total} LKR</strong><br>
+                  🏬 Shop: ${fab.shopName} | 🧾 Bill ID: ${fab.billId}
+                </li>
+              `).join('')}
+            </ul>
+
+            <p><strong>💸 Cost:</strong> ${order.cost} LKR</p>
+            <p><strong>🏷️ Selling Price per Item:</strong> ${order.selling_price} LKR</p>
+            <p><strong>🧮 Total Selling:</strong> ${(order.selling_price * order.quantity).toFixed(2)} LKR</p>
+            <p><strong>📈 Profit:</strong> ${order.profit} LKR 
+              <span style="color:${order.profit >= 0 ? 'green' : 'red'};">
+                (${order.profit >= 0 ? 'Profit' : 'Loss'})
+              </span>
+            </p>
+
+            <p><strong>💳 Payment Status:</strong> 
+              ${order.advanced_paid == 1 ? '<span class="tag">Advanced Paid</span>' : ''} 
+              ${order.full_paid == 1 ? '<span class="tag">Full Paid</span>' : ''}
+            </p>
+
+            <div class="total-price">💰 Total Fabric & Ops: ${order.total_price} LKR</div>
+          `;
+
+          container.appendChild(card);
+        });
+      } catch (err) {
+        document.getElementById('ordersContainer').innerHTML = '<p style="color:red;">Error loading orders.</p>';
+      }
+    }
+
+    window.onload = () => loadOrders();
+  </script>
+</body>
+</html>
