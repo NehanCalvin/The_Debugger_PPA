@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+    <head><meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>Raw Inventory Management</title>
+        <link rel="stylesheet" href="inventory_create.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    </head>
+
+    <body>
+        <div class="sidebar">
+            <a class="active" href="#"><i class="fas fa-plus-circle"></i> Create Inventory</a>
+            <a href="inventory_manage.html"><i class="fas fa-chart-line"></i> Manage Inventory</a>
+            <a href="inventory_report.html"><i class="fas fa-file-alt"></i> Reports</a>
+        </div>
+
+        <div class="content">
+            <h1>Create New Raw Inventory</h1>
+
+            <form id="orderForm" method="POST" action="inventory_save.php">
+                <section class="form-group">
+                    <label for="itemName"><i class="fas fa-file-invoice"></i> Item Name</label>
+                    <input type="text" id="itemName" name="itemName" required />
+            
+                    <label for="colour"><i class="fa-solid fa-palette"></i> Colour</label>
+                    <input type="text" id="colour" name="colour" required />
+
+                    <label for="rawprice"><i class="fa-solid fa-sack-dollar"></i> Price per Item (LKR)</label>
+                    <input type="text" id="rawprice" name="rawprice" required />
+            
+                    <label for="supplier"><i class="fas fa-user"></i> Supplier Name</label>
+                    <input type="text" id="supplier" name="supplier" required />
+            
+                    <label for="phone"><i class="fas fa-phone"></i> Supplier Contact</label>
+                    <input type="text" id="phone" name="phone" required />
+                    
+                    <label for="quantity"><i class="fas fa-sort-numeric-up"></i> Quantity</label>
+                    <input type="number" id="quantity" name="quantity" value="1" min="1" required />
+                </section>
+
+                <section class="summary">
+                    <p class="final-price">Total Price: <span id="total">0.00</span> LKR</p>
+                </section>
+                <button type="submit" onclick="prepareFormBeforeSubmit()">Submit Order</button>
+            </form>
+        </div>
+
+        <script>
+            const quantityInput = document.getElementById('quantity');
+            const rawpriceInput = document.getElementById('rawprice');
+
+            function calculateTotal() {
+            const quantity = parseInt(quantityInput.value) || 0;
+            const rawprice = parseFloat(rawpriceInput.value) || 0;
+
+            let totalCost = 0;
+            totalCost = price * quantity;
+            
+            totalSpan.textContent = totalCost.toFixed(2);
+            document.getElementById('totalCost').textContent = totalCost.toFixed(2);
+
+            
+
+            }
+
+            quantityInput.addEventListener('input', calculateTotal);
+            rawpriceInput.addEventListener('input', calculateTotal);
+
+            window.onload = () => {
+            calculateTotal();
+            };      
+        </script>
+    </body>
+</html>
