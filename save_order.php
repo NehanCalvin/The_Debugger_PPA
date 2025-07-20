@@ -3,7 +3,7 @@
 $host = "localhost";
 $user = "root"; // update if needed
 $pass = "";
-$db   = "PPA_Order";
+$db = "PPA_Order";
 
 $conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) {
@@ -11,23 +11,24 @@ if ($conn->connect_error) {
 }
 
 // Get POST data
-$invoice       = $_POST['invoice'];
-$company       = $_POST['company'];
-$client        = $_POST['client'];
-$phone         = $_POST['phone'];
-$quantity      = $_POST['quantity'];
-$fabric_data   = $_POST['fabric_data'];
-$operations    = $_POST['operations'];
-$total_price   = $_POST['total_price'];
+$invoice = $_POST['invoice'];
+$company = $_POST['company'];
+$client = $_POST['client'];
+$phone = $_POST['phone'];
+$quantity = $_POST['quantity'];
+$fabric_data = $_POST['fabric_data'];
+$operations = $_POST['operations'];
+$total_price = $_POST['total_price'];
 $selling_price = $_POST['selling_price'];
-$cost          = $_POST['cost'];
-$profit        = $_POST['profit'];
+$cost = $_POST['cost'];
+$profit = $_POST['profit'];
+$advance_amount = isset($_POST['advance_amount']) ? floatval($_POST['advance_amount']) : 0;
 
 // Insert order
-$sql = "INSERT INTO orders (invoice, company, client, phone, quantity, operations, total_price, cost, selling_price, profit) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+$sql = "INSERT INTO orders (invoice, company, client, phone, quantity, operations, total_price, cost, selling_price, profit, advance_amount) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("ssssissddd", $invoice, $company, $client, $phone, $quantity, $operations, $total_price, $cost, $selling_price, $profit);
+$stmt->bind_param("ssssissddds", $invoice, $company, $client, $phone, $quantity, $operations, $total_price, $cost, $selling_price, $profit, $advance_amount);
 $stmt->execute();
 $order_id = $stmt->insert_id;
 $stmt->close();
@@ -41,7 +42,7 @@ if (!empty($fabrics)) {
 
     foreach ($fabrics as $fabric) {
         $stmt_fabric->bind_param(
-            "isssidd", 
+            "isssidd",
             $order_id,
             $fabric['itemName'],
             $fabric['shopName'],

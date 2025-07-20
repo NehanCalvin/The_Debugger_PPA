@@ -13,7 +13,7 @@
     <a class="" href="#"><i class="fas fa-list-alt"></i> Orders</a>
     <a class="active" href="orders.html"><i class="fas fa-plus-circle"></i> Create Order</a>
     <a href="order&sales.html"><i class="fas fa-chart-line"></i> Orders & Sales</a>
-    <a href="#"><i class="fas fa-file-alt"></i> Reports</a>
+    <a href="report.html"><i class="fas fa-file-alt"></i> Reports</a>
   </div>
 
   <div class="content">
@@ -77,6 +77,26 @@
 
       <p class="final-price">💰 Total Cost: <span id="totalCost">0.00</span> LKR</p>
       <p class="final-price">💸 Total Selling Amount: <span id="totalSelling">0.00</span> LKR</p>
+      <br>
+      <!-- Insert Payment Section Here -->
+      <section class="payment-section">
+        <h3>💳 Payment Details</h3>
+
+        <label for="paymentStatus"><i class="fas fa-receipt"></i> Payment Status</label>
+        <select id="paymentStatus" name="payment_status" onchange="handlePaymentStatus()">
+          <option value="not_received">Not Received</option>
+          <option value="advance">Advance Paid</option>
+          <option value="full">Full Paid</option>
+        </select>
+
+        <div id="advanceSection" style="display: none;">
+          <label for="advanceAmount"><i class="fas fa-coins"></i> Amount Paid (LKR)</label>
+          <input type="number" id="advanceAmount" name="advance_amount" min="0" value="0" oninput="updateRemaining()" />
+        </div>
+
+        <p class="final-price">💰 Remaining Payment: <span id="remainingPayment">0.00</span> LKR</p>
+      </section>
+      <br>
       <p class="final-price">📈 Profit: <span id="profitAmount">0.00</span> LKR</p>
       <p class="final-price">📊 Status: <span id="profitStatus">-</span></p>
 
@@ -87,177 +107,201 @@
     </form>
   </div>
 
-  <script>
-    const quantityInput = document.getElementById('quantity');
-    const sellingInput = document.getElementById('sellingPrice');
-    const orderPriceDisplay = document.getElementById('orderPrice');
+ <script>
+  const quantityInput = document.getElementById('quantity');
+  const sellingInput = document.getElementById('sellingPrice');
+  const orderPriceDisplay = document.getElementById('orderPrice');
 
-    const operationCheckboxes = document.querySelectorAll('.operation');
-    const breakdownList = document.getElementById('operationBreakdown');
-    const totalSpan = document.getElementById('total');
-    const fabricContainer = document.getElementById('fabricContainer');
-    const grandTotal = document.getElementById('grandTotal');
-    const savedFabricList = document.getElementById('savedFabricList');
+  const operationCheckboxes = document.querySelectorAll('.operation');
+  const breakdownList = document.getElementById('operationBreakdown');
+  const totalSpan = document.getElementById('total');
+  const fabricContainer = document.getElementById('fabricContainer');
+  const grandTotal = document.getElementById('grandTotal');
+  const savedFabricList = document.getElementById('savedFabricList');
 
-    const operationPrices = {
-      cutting: 15,
-      print: 30,
-      embroidery: 166,
-      sublimation: 25,
-      stitch: 130,
-      iron: 40,
-      washing: 15,
-    };
+  const operationPrices = {
+    cutting: 15,
+    print: 30,
+    embroidery: 166,
+    sublimation: 25,
+    stitch: 130,
+    iron: 40,
+    washing: 15,
+  };
 
-    let fabricCount = 0;
+  let fabricCount = 0;
 
-    function calculateTotal() {
-      const quantity = parseInt(quantityInput.value) || 0;
-      const sellingPrice = parseFloat(sellingInput.value) || 0;
+  function calculateTotal() {
+    const quantity = parseInt(quantityInput.value) || 0;
+    const sellingPrice = parseFloat(sellingInput.value) || 0;
 
-      let opTotal = 0;
-      breakdownList.innerHTML = '';
+    let opTotal = 0;
+    breakdownList.innerHTML = '';
 
-      operationCheckboxes.forEach((checkbox) => {
-        if (checkbox.checked) {
-          const price = operationPrices[checkbox.value];
-          opTotal += price * quantity;
-          breakdownList.innerHTML += `<li>${checkbox.value}: ${quantity} × ${price} = ${quantity * price} LKR</li>`;
-        }
-      });
-
-      const fabricCost = getFabricTotal();
-      const totalCost = opTotal + fabricCost;
-      const totalSelling = quantity * sellingPrice;
-      const profit = totalSelling - totalCost;
-      const status = profit >= 0 ? '✅ Profit' : '❌ Loss';
-
-      // Update all UI
-      totalSpan.textContent = totalCost.toFixed(2);
-      document.getElementById('totalCost').textContent = totalCost.toFixed(2);
-      document.getElementById('totalSelling').textContent = totalSelling.toFixed(2);
-      document.getElementById('profitAmount').textContent = profit.toFixed(2);
-      document.getElementById('profitStatus').textContent = status;
-      orderPriceDisplay.textContent = totalSelling.toFixed(2); // live order price
-
-      // Hidden inputs
-      document.getElementById('profit').value = profit;
-      document.getElementById('cost').value = totalCost;
-      document.getElementById('total_price').value = totalCost;
-    }
-
-    quantityInput.addEventListener('input', calculateTotal);
-    sellingInput.addEventListener('input', calculateTotal);
-    operationCheckboxes.forEach(cb => cb.addEventListener('change', calculateTotal));
-
-    function addFabricItem() {
-      fabricCount++;
-      const id = fabricCount;
-
-      const html = `
-        <div class="fabric-item" id="fabric-${id}">
-          <label>Item/Fabric</label>
-          <input type="text" name="itemName-${id}" required />
-          <label>Shop Name</label>
-          <input type="text" name="shopName-${id}" required />
-          <label>Bill ID</label>
-          <input type="text" name="billId-${id}" required />
-          <label>Fabric Quantity</label>
-          <input type="number" min="1" value="1" id="fabQty-${id}" oninput="calcFabricTotal(${id})" />
-          <label>Amount per Item</label>
-          <input type="number" min="0" value="0" id="fabAmt-${id}" oninput="calcFabricTotal(${id})" />
-          <label>Total</label>
-          <input type="text" id="fabTotal-${id}" readonly value="0.00" />
-          <button type="button" class="save-btn" onclick="saveFabricItem(${id})">✔ Save Item</button>
-        </div>`;
-      fabricContainer.insertAdjacentHTML('beforeend', html);
-    }
-
-    function calcFabricTotal(id) {
-      const qty = parseFloat(document.getElementById(`fabQty-${id}`).value) || 0;
-      const amt = parseFloat(document.getElementById(`fabAmt-${id}`).value) || 0;
-      document.getElementById(`fabTotal-${id}`).value = (qty * amt).toFixed(2);
-      updateGrandTotal();
-    }
-
-    function updateGrandTotal() {
-      const total = getFabricTotal();
-      grandTotal.textContent = total.toFixed(2);
-      calculateTotal();
-    }
-
-    function getFabricTotal() {
-      let sum = 0;
-      document.querySelectorAll('.fabric-item').forEach(div => {
-        const totalInput = div.querySelector('input[id^="fabTotal-"]');
-        if (totalInput) sum += parseFloat(totalInput.value) || 0;
-      });
-      const saved = JSON.parse(localStorage.getItem('savedFabrics')) || {};
-      for (const id in saved) sum += parseFloat(saved[id].total) || 0;
-      return sum;
-    }
-
-    function saveFabricItem(id) {
-      const div = document.getElementById(`fabric-${id}`);
-      const item = div.querySelector(`input[name="itemName-${id}"]`).value.trim();
-      const shop = div.querySelector(`input[name="shopName-${id}"]`).value.trim();
-      const bill = div.querySelector(`input[name="billId-${id}"]`).value.trim();
-      const qty = div.querySelector(`#fabQty-${id}`).value;
-      const amt = div.querySelector(`#fabAmt-${id}`).value;
-      const total = div.querySelector(`#fabTotal-${id}`).value;
-
-      if (item && shop && bill && qty && amt && total && parseFloat(total) > 0) {
-        const fabrics = JSON.parse(localStorage.getItem('savedFabrics')) || {};
-        fabrics[id] = { itemName: item, shopName: shop, billId: bill, qty, amt, total };
-        localStorage.setItem('savedFabrics', JSON.stringify(fabrics));
-        div.remove();
-        renderSavedFabricList();
-        updateGrandTotal();
-      } else {
-        alert("Fill all fields and ensure total > 0.");
+    operationCheckboxes.forEach((checkbox) => {
+      if (checkbox.checked) {
+        const price = operationPrices[checkbox.value];
+        opTotal += price * quantity;
+        breakdownList.innerHTML += `<li>${checkbox.value}: ${quantity} × ${price} = ${quantity * price} LKR</li>`;
       }
+    });
+
+    const fabricCost = getFabricTotal();
+    const totalCost = opTotal + fabricCost;
+    const totalSelling = quantity * sellingPrice;
+    const profit = totalSelling - totalCost;
+    const status = profit >= 0 ? '✅ Profit' : '❌ Loss';
+
+    totalSpan.textContent = totalCost.toFixed(2);
+    document.getElementById('totalCost').textContent = totalCost.toFixed(2);
+    document.getElementById('totalSelling').textContent = totalSelling.toFixed(2);
+    document.getElementById('profitAmount').textContent = profit.toFixed(2);
+    document.getElementById('profitStatus').textContent = status;
+    orderPriceDisplay.textContent = totalSelling.toFixed(2);
+
+    document.getElementById('profit').value = profit;
+    document.getElementById('cost').value = totalCost;
+    document.getElementById('total_price').value = totalCost;
+
+    updateRemaining(); // live update remaining
+  }
+
+  function handlePaymentStatus() {
+    const status = document.getElementById('paymentStatus').value;
+    const advanceSection = document.getElementById('advanceSection');
+
+    if (status === 'advance') {
+      advanceSection.style.display = 'block';
+    } else {
+      advanceSection.style.display = 'none';
+      document.getElementById('advanceAmount').value = (status === 'full')
+        ? parseFloat(document.getElementById('totalSelling').textContent || '0')
+        : 0;
     }
 
-    function renderSavedFabricList() {
-      savedFabricList.innerHTML = '';
-      const fabrics = JSON.parse(localStorage.getItem('savedFabrics')) || {};
-      for (const id in fabrics) {
-        const fab = fabrics[id];
-        const card = document.createElement('div');
-        card.classList.add('saved-item-card');
-        card.innerHTML = `
-          <div class="saved-item-details">
-            <strong>${fab.itemName}</strong><br/>
-            Shop: ${fab.shopName} | Bill: ${fab.billId}<br/>
-            Qty: ${fab.qty} | Unit: ${fab.amt} | Total: <strong>${fab.total} LKR</strong>
-          </div>
-          <button class="delete-btn" onclick="deleteSavedFabric(${id})">❌</button>
-        `;
-        savedFabricList.appendChild(card);
-      }
-    }
+    updateRemaining();
+  }
 
-    function deleteSavedFabric(id) {
+  function updateRemaining() {
+    const totalSelling = parseFloat(document.getElementById('totalSelling').textContent) || 0;
+    const advance = parseFloat(document.getElementById('advanceAmount').value) || 0;
+    const remaining = Math.max(totalSelling - advance, 0);
+    document.getElementById('remainingPayment').textContent = remaining.toFixed(2);
+  }
+
+  quantityInput.addEventListener('input', calculateTotal);
+  sellingInput.addEventListener('input', calculateTotal);
+  operationCheckboxes.forEach(cb => cb.addEventListener('change', calculateTotal));
+
+  function addFabricItem() {
+    fabricCount++;
+    const id = fabricCount;
+
+    const html = `
+      <div class="fabric-item" id="fabric-${id}">
+        <label>Item/Fabric</label>
+        <input type="text" name="itemName-${id}" required />
+        <label>Shop Name</label>
+        <input type="text" name="shopName-${id}" required />
+        <label>Bill ID</label>
+        <input type="text" name="billId-${id}" required />
+        <label>Fabric Quantity</label>
+        <input type="number" min="1" value="1" id="fabQty-${id}" oninput="calcFabricTotal(${id})" />
+        <label>Amount per Item</label>
+        <input type="number" min="0" value="0" id="fabAmt-${id}" oninput="calcFabricTotal(${id})" />
+        <label>Total</label>
+        <input type="text" id="fabTotal-${id}" readonly value="0.00" />
+        <button type="button" class="save-btn" onclick="saveFabricItem(${id})">✔ Save Item</button>
+      </div>`;
+    fabricContainer.insertAdjacentHTML('beforeend', html);
+  }
+
+  function calcFabricTotal(id) {
+    const qty = parseFloat(document.getElementById(`fabQty-${id}`).value) || 0;
+    const amt = parseFloat(document.getElementById(`fabAmt-${id}`).value) || 0;
+    document.getElementById(`fabTotal-${id}`).value = (qty * amt).toFixed(2);
+    updateGrandTotal();
+  }
+
+  function updateGrandTotal() {
+    const total = getFabricTotal();
+    grandTotal.textContent = total.toFixed(2);
+    calculateTotal();
+  }
+
+  function getFabricTotal() {
+    let sum = 0;
+    document.querySelectorAll('.fabric-item').forEach(div => {
+      const totalInput = div.querySelector('input[id^="fabTotal-"]');
+      if (totalInput) sum += parseFloat(totalInput.value) || 0;
+    });
+    const saved = JSON.parse(localStorage.getItem('savedFabrics')) || {};
+    for (const id in saved) sum += parseFloat(saved[id].total) || 0;
+    return sum;
+  }
+
+  function saveFabricItem(id) {
+    const div = document.getElementById(`fabric-${id}`);
+    const item = div.querySelector(`input[name="itemName-${id}"]`).value.trim();
+    const shop = div.querySelector(`input[name="shopName-${id}"]`).value.trim();
+    const bill = div.querySelector(`input[name="billId-${id}"]`).value.trim();
+    const qty = div.querySelector(`#fabQty-${id}`).value;
+    const amt = div.querySelector(`#fabAmt-${id}`).value;
+    const total = div.querySelector(`#fabTotal-${id}`).value;
+
+    if (item && shop && bill && qty && amt && total && parseFloat(total) > 0) {
       const fabrics = JSON.parse(localStorage.getItem('savedFabrics')) || {};
-      delete fabrics[id];
+      fabrics[id] = { itemName: item, shopName: shop, billId: bill, qty, amt, total };
       localStorage.setItem('savedFabrics', JSON.stringify(fabrics));
+      div.remove();
       renderSavedFabricList();
       updateGrandTotal();
+    } else {
+      alert("Fill all fields and ensure total > 0.");
     }
+  }
 
-    function prepareFormBeforeSubmit() {
-      const fabrics = JSON.parse(localStorage.getItem('savedFabrics')) || {};
-      document.getElementById('fabric_data').value = JSON.stringify(fabrics);
-      const ops = [...document.querySelectorAll('.operation:checked')].map(cb => cb.value);
-      document.getElementById('operations').value = ops.join(',');
+  function renderSavedFabricList() {
+    savedFabricList.innerHTML = '';
+    const fabrics = JSON.parse(localStorage.getItem('savedFabrics')) || {};
+    for (const id in fabrics) {
+      const fab = fabrics[id];
+      const card = document.createElement('div');
+      card.classList.add('saved-item-card');
+      card.innerHTML = `
+        <div class="saved-item-details">
+          <strong>${fab.itemName}</strong><br/>
+          Shop: ${fab.shopName} | Bill: ${fab.billId}<br/>
+          Qty: ${fab.qty} | Unit: ${fab.amt} | Total: <strong>${fab.total} LKR</strong>
+        </div>
+        <button class="delete-btn" onclick="deleteSavedFabric(${id})">❌</button>
+      `;
+      savedFabricList.appendChild(card);
     }
+  }
 
-    window.onload = () => {
-      renderSavedFabricList();
-      addFabricItem();
-      calculateTotal();
-    };
-    
-  </script>
+  function deleteSavedFabric(id) {
+    const fabrics = JSON.parse(localStorage.getItem('savedFabrics')) || {};
+    delete fabrics[id];
+    localStorage.setItem('savedFabrics', JSON.stringify(fabrics));
+    renderSavedFabricList();
+    updateGrandTotal();
+  }
+
+  function prepareFormBeforeSubmit() {
+    const fabrics = JSON.parse(localStorage.getItem('savedFabrics')) || {};
+    document.getElementById('fabric_data').value = JSON.stringify(fabrics);
+    const ops = [...document.querySelectorAll('.operation:checked')].map(cb => cb.value);
+    document.getElementById('operations').value = ops.join(',');
+  }
+
+  window.onload = () => {
+    renderSavedFabricList();
+    addFabricItem();
+    calculateTotal();
+    handlePaymentStatus(); // ensure correct section is shown on page load
+  };
+</script>
+
 </body>
 </html>
