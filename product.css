@@ -1,0 +1,117 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: white;
+  background-color: #1e1e1e;
+}
+
+.container {
+  display: flex;
+}
+
+.sidebar {
+    width: 220px;
+    height: 100vh;
+    background: #2c2c2c;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding-top: 40px;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.6);
+  }
+  
+  .sidebar a {
+    color: #ccc;
+    padding: 15px 25px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    border-left: 4px solid transparent;
+  }
+  
+  .sidebar a.active {
+    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    color: #fff;
+    font-weight: bold;
+    border-left: 4px solid #fff;
+  }
+  
+  .sidebar a:hover:not(.active) {
+    background-color: #3a3a3a;
+    color: #fff;
+    border-left: 4px solid #ff416c;
+  }
+
+
+.dashboard-btn {
+  margin-top: 20px;
+  width: 100%;
+  background-color: red;
+  border: none;
+  color: white;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.main-content {
+  flex: 1;
+  padding: 40px;
+  margin-left: 260px;
+}
+
+.card {
+  background-color: #292929;
+  border-radius: 10px;
+  display: flex;
+  padding: 20px;
+  align-items: center;
+}
+
+.card img {
+  width: 150px;
+  margin-right: 30px;
+}
+
+.info p {
+  margin: 5px 0;
+}
+
+.payment {
+  margin: 15px 0;
+}
+
+.payment label {
+  display: block;
+  margin: 5px 0;
+  padding: 5px;
+}
+
+.payment .checked-green {
+  background-color: green;
+  border-radius: 4px;
+}
+
+.edit-btn {
+  background-color: green;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  margin-right: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.delete-btn {
+  background-color: red;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
