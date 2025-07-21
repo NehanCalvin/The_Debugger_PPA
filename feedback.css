@@ -1,0 +1,75 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #584444;
+  padding: 40px;
+}
+
+.feedback-container {
+  max-width: 500px;
+  margin: auto;
+  background: #dbd7d7;
+  padding: 60px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  border-radius: 10px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+label {
+  font-weight: bold;
+  display: block;
+  margin-top: 10px;
+}
+
+input[type="text"],
+textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.star-rating {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  margin-top: 5px;
+}
+
+.star-rating span {
+  font-size: 25px;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.star-rating span:hover,
+.star-rating span.active {
+  color: rgb(255, 0, 0);
+}
+
+button {
+  margin-top: 20px;
+  width: 100%;
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #218838;
+}
+
+#responseMsg {
+  margin-top: 15px;
+  text-align: center;
+  font-weight: bold;
+}
