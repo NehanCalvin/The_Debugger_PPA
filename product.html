@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Product Management</title>
+  <link rel="stylesheet" href="product.css">
+  <style>
+    .checked-green {
+      background-color: #c8e6c9;
+      padding: 5px;
+      border-radius: 5px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <a href="create_product.html"><i class="fas fa-plus-circle"></i> Create Product</a>
+    <a class="active" href="product.html"><i class="fas fa-chart-line"></i> Products</a>
+    <a href="report.html"><i class="fas fa-file-alt"></i> Reports</a>
+  </div>
+
+  <main class="main-content">
+    <h2>Product Management</h2>
+    <div class="card">
+      <img src="https://i.imgur.com/dv9ZJwM.png" alt="T-shirt">
+      <div class="info">
+        <p><strong>Product number:</strong> 002</p>
+        <p><strong>Item:</strong> T-Shirt</p>
+        <p><strong>Client:</strong> KFC</p>
+        <p><strong>Size:</strong> S, M, L</p>
+        <p><strong>Quantity:</strong> 20</p>
+        <p><strong>Amount paid:</strong> 10,000.00 LKR</p>
+        
+        <div class="payment">
+          <label>
+            <input type="checkbox" class="checkbox" id="paid">
+            Fully paid
+          </label>
+          <label>
+            <input type="checkbox" id="advance">
+            Advance
+          </label>
+        </div>
+
+        <div id="advanceInput" style="display: none; margin-top: 10px;">
+          <label>
+            Amount:
+            <input type="number" id="advanceAmount" min="0"> LKR
+          </label>
+          <p id="due" class="due-text"></p>
+        </div>
+
+        <div class="buttons">
+          <button class="edit-btn" onclick="location.href='create_product.html'">Edit</button>
+          <button class="delete-btn">Delete</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const paidCheckbox = document.getElementById("paid");
+    paidCheckbox.addEventListener("change", () => {
+      if (paidCheckbox.checked) {
+        paidCheckbox.parentElement.classList.add("checked-green");
+      } else {
+        paidCheckbox.parentElement.classList.remove("checked-green");
+      }
+    });
+
+    const advanceCheckbox = document.getElementById("advance");
+    const advanceInput = document.getElementById("advanceInput");
+    const advanceAmount = document.getElementById("advanceAmount");
+    const dueText = document.getElementById("due");
+    const totalAmount = 15000;
+
+    advanceCheckbox.addEventListener("change", () => {
+      advanceInput.style.display = advanceCheckbox.checked ? "block" : "none";
+      dueText.textContent = "";
+      advanceAmount.value = "";
+    });
+
+    advanceAmount.addEventListener("input", () => {
+      const paid = parseFloat(advanceAmount.value) || 0;
+      const due = totalAmount - paid;
+      dueText.textContent = `Due Amount: ${due.toFixed(2)} LKR`;
+    });
+  </script>
+</body>
+</html>
