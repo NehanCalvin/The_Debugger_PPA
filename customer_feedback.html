@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Customer Feedback</title>
+  <link rel="stylesheet" href="feedback.css">
+</head>
+<body>
+  <div class="feedback-container">
+    <h2>Customer Feedback Form</h2>
+    <form id="feedbackForm" method="POST" action="/submit_feedback">
+      <label for="name">Your Name:</label>
+      <input type="text" id="name" name="name" required>
+
+      <label for="product">Product Ordered:</label>
+      <input type="text" id="product" name="product" required>
+
+      <label>Your Rating:</label>
+      <div class="star-rating">
+        <span data-value="1">&#9733;</span>
+        <span data-value="2">&#9733;</span>
+        <span data-value="3">&#9733;</span>
+        <span data-value="4">&#9733;</span>
+        <span data-value="5">&#9733;</span>
+      </div>
+      <input type="hidden" id="rating" name="rating" required>
+
+      <label for="comments">Comments: (Optional)</label>
+      <textarea id="comments" name="comments" rows="4"></textarea>
+
+      <button type="submit">Submit Feedback</button>
+    </form>
+    <p id="responseMsg"></p>
+  </div>
+
+  <script src="feedback.js"></script>
+</body>
+</html>
