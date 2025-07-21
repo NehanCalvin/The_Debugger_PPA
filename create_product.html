@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="stylesheet" href="orders.css"/>
+
+    <title>create_product</title>
+</head>
+<body>
+
+    <div class="sidebar">
+    <h2>Product Management</h2>
+    <ul>
+      <li><a href="create_product.php">Create Product</a></li>
+      <li><a href="product.php">Product</a></li>
+      <li><a href="report.php">Reports</a></li>
+    </ul>
+    <button class="dashboard-btn">Dashboard</button>
+  </div>
+
+  <div class="main-content">
+    <h2>Create Product</h2>
+    <form class="product-form">
+      <label>Product Number
+        <input type="text" placeholder="Enter product number">
+      </label>
+      <label>Product Name
+        <input type="text" placeholder="Enter product name">
+      </label>
+      <label>Client
+        <input type="text" placeholder="Client name">
+      </label>
+      <label>Size
+        <select>
+          <option>Select</option>
+          <option>Free</option>
+          <option>XXS</option>
+          <option>XS</option>
+          <option>S</option>
+          <option>M</option>
+          <option>L</option>
+          <option>XL</option>
+          <option>2XL</option>
+          <option>3XL</option>
+          <option>4XL</option>
+
+        </select>
+      </label>
+      <label>Price per item (LKR)
+        <input type="price" placeholder="0.00 LKR">
+      </label>
+      <label>Quantity
+        <input type="number" placeholder="0">
+      </label>
+      <p class="total">Total Price : 0.00 LKR</p>
+      <div class="image-upload">
+        <label for="productImage">Upload product image</label>
+        <input type="file" id="productImage" name="productImage" accept="image/*">
+            <img id="preview" alt="Image Preview" />
+
+      </div>
+      <button class="save-btn">Save Item</button>
+    </form>
+  </div>
+
+</body>
+</html>
+
+
+<script>
+  document.getElementById('productImage').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('preview');
+    preview.src = URL.createObjectURL(file);
+  });
+</script>
