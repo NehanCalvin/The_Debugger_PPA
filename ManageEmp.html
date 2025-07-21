@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Employees</title>
+    <link rel="stylesheet" href="manageEmp.css">
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+
+        <a href="empDetails.html">Employee details</a>
+        <a href="employee.html">Add Employee</a>
+        <a href="ManageEmp.html" class="active">Manage Employees</a>
+        <a href="EmpReport.html">Reports</a>
+        <a href="admin.html" class="dashboard-btn">Dashboard</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1>Manage Employee Payments</h1>
+
+        <div class="form-box">
+            <select id="employee-select">
+                <option value="">Select Employee</option>
+                <!-- Dynamic options will be loaded here -->
+            </select>
+
+            <div id="bank-details" style="display: none; margin-top: 15px;">
+                <h3>Bank Details</h3>
+                <p><strong>Bank Name:</strong> <span id="bank-name"></span></p>
+                <p><strong>Branch:</strong> <span id="bank-branch"></span></p>
+                <p><strong>Account No:</strong> <span id="account-no"></span></p>
+                <p><strong>Account Holder:</strong> <span id="account-holder"></span></p>
+            </div>
+
+            <input type="number" placeholder="No of Items">
+            <input type="number" placeholder="Payment for one piece">
+            <input type="text" value="Total Payment: Rs. 0" readonly>
+
+            <button>Submit Order</button>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        const employees = JSON.parse(localStorage.getItem('employees')) || [];
+        const select = document.getElementById('employee-select');
+        const bankDetails = document.getElementById('bank-details');
+
+        const bankName = document.getElementById('bank-name');
+        const bankBranch = document.getElementById('bank-branch');
+        const accountNo = document.getElementById('account-no');
+        const accountHolder = document.getElementById('account-holder');
+
+        // Populate employee dropdown
+        employees.forEach((emp, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = emp.name;
+            select.appendChild(option);
+        });
+
+        // Display bank details when employee is selected
+        select.addEventListener('change', function () {
+            const index = this.value;
+            if (index === "") {
+                bankDetails.style.display = 'none';
+            } else {
+                const emp = employees[index];
+                bankName.textContent = emp.bankName;
+                bankBranch.textContent = emp.branch;
+                accountNo.textContent = emp.accountNo;
+                accountHolder.textContent = emp.accountHolder;
+                bankDetails.style.display = 'block';
+            }
+        });
+    </script>
+
+</body>
+</html>
