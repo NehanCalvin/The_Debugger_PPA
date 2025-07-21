@@ -1,12 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee management</title>
+    <link rel="stylesheet" href="employee.css">
+    <title>Add Employee</title>
 </head>
 <body>
-    
+
+    <!-- Include Sidebar -->
+    <div class="sidebar">
+        <a href="empDetails.html">Employee details</a>
+        <a href="employee.html" class="active">Add Employee</a>
+        <a href="ManageEmp.html">Manage Employees</a>
+        <a href="EmpReport.html">Reports</a>
+        <a href="admin.html" class="dashboard-btn">Dashboard</a>
+    </div>
+
+    <div class="main-content">
+        <h1>Add Employee</h1>
+        <div class="form-box">
+            <input type="text" placeholder="Employee Name">
+            <input type="text" placeholder="Employee Address">
+            <input type="text" placeholder="Phone">
+            <input type="text" placeholder="Job Role">
+            <h3>Bank details</h3>
+            <input type="text" placeholder="Bank Name">
+            <input type="text" placeholder="Branch">
+            <input type="text" placeholder="Account No">
+            <input type="text" placeholder="Account Holder Name">
+            <button>Submit Order</button>
+        </div>
+    </div>
+
 </body>
 </html>
+
+<script>
+    document.getElementById('add-employee-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const employee = {
+            name: document.getElementById('emp-name').value,
+            address: document.getElementById('emp-address').value,
+            phone: document.getElementById('emp-phone').value,
+            jobRole: document.getElementById('emp-job').value,
+            bankName: document.getElementById('bank-name').value,
+            branch: document.getElementById('branch').value,
+            accountNo: document.getElementById('account-no').value,
+            accountHolder: document.getElementById('account-holder').value
+        };
+
+        let employees = JSON.parse(localStorage.getItem('employees')) || [];
+        employees.push(employee);
+        localStorage.setItem('employees', JSON.stringify(employees));
+
+        alert('Employee Added Successfully!');
+        this.reset();
+    });
+</script>
+
