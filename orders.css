@@ -1,0 +1,129 @@
+/* General Styles */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #1e1e1e;
+  color: #fff;
+  display: flex;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 200px;
+  height: 100vh;
+  background-color: #2e2e2e;
+  padding: 20px;
+}
+
+.sidebar h2 {
+  font-size: 18px;
+  margin-bottom: 20px;
+  color: #fff;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar ul li {
+  padding: 10px;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.sidebar ul li.active,
+.sidebar ul li:hover {
+  background-color: #f44336;
+  color: white;
+}
+
+.dashboard-btn {
+  margin-top: 50px;
+  width: 100%;
+  padding: 10px;
+  background-color: red;
+  border: none;
+  color: white;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  padding: 40px;
+}
+
+.main-content h2 {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 30px;
+}
+
+/* Product Form */
+.product-form {
+  background-color: #2e2e2e;
+  padding: 30px;
+  border-radius: 20px;
+  max-width: 500px;
+}
+
+.product-form label {
+  display: block;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+.product-form input,
+.product-form select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  margin-top: 5px;
+  font-size: 14px;
+  background-color: #444;
+  color: white;
+}
+
+.product-form .total {
+  color: #00cc66;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+/* Image Upload */
+.image-upload {
+  margin-top: 20px;
+}
+
+.image-upload input[type="file"] {
+  margin-top: 10px;
+  color: white;
+}
+
+.image-upload img {
+  width: 100px;
+  height: 100px;
+  margin-top: 10px;
+  object-fit: cover;
+  border: 2px solid white;
+  border-radius: 8px;
+  background-color: white;
+}
+
+/* Save Button */
+.save-btn {
+  margin-top: 20px;
+  background-color: #6aaa64;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
