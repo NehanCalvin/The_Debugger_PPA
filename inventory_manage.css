@@ -71,10 +71,10 @@ body {
 
 /* Search Box */
   #searchBox {
-    position: fixed;
+    position:relative;
+    justify-content: center;
     top: 20px;
-    left: 250px;
-    width: calc(100% - 270px);
+    width: calc(90% - 270px);
     padding: 12px 16px;
     font-size: 16px;
     border-radius: 6px;
