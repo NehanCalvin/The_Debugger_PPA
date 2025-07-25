@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit Order</title>
+  <link rel="stylesheet" href="order.css" />
+  <style>
+    form {
+      max-width: 700px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: #f4f4f4;
+      border-radius: 10px;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 0.4rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      margin-top: 1.5rem;
+      padding: 10px 20px;
+      background-color: #007bff;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 style="text-align:center;">✏️ Edit Order</h1>
+
+  <form id="editOrderForm">
+    <label>Company Name</label>
+    <input type="text" name="company" required />
+
+    <label>Invoice Number</label>
+    <input type="text" name="invoice" required />
+
+    <label>Client Name</label>
+    <input type="text" name="client" required />
+
+    <label>Phone Number</label>
+    <input type="text" name="phone" required />
+
+    <label>Quantity</label>
+    <input type="number" name="quantity" required />
+
+    <label>Operations (comma-separated)</label>
+    <input type="text" name="operations" placeholder="e.g. cutting, stitching" />
+
+    <label>Cost</label>
+    <input type="number" name="cost" required />
+
+    <label>Selling Price (per item)</label>
+    <input type="number" name="selling_price" required />
+
+    <label>Advance Paid Amount</label>
+    <input type="number" name="advance_amount" />
+
+    <label>Payment Status</label>
+    <select name="payment_status">
+      <option value="none">Not Received</option>
+      <option value="advance">Advance Paid</option>
+      <option value="full">Full Paid</option>
+    </select>
+
+    <input type="hidden" name="id" />
+
+    <button type="submit">Update Order</button>
+  </form>
+
+  <script>
+    const form = document.getElementById('editOrderForm');
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('id');
+
+    if (!orderId) {
+      alert("Order ID not provided in URL.");
+      window.location.href = "order&sales.html";
+    }
+
+    async function loadOrderData() {
+      const res = await fetch(`get_order.php?id=${orderId}`);
+      const order = await res.json();
+
+      if (!order || !order.id) {
+        alert("Order not found.");
+        return;
+      }
+
+      for (let key in order) {
+        if (form.elements[key]) {
+          form.elements[key].value = order[key];
+        }
+      }
+
+      form.elements["payment_status"].value =
+        order.full_paid == 1 ? "full" :
+        order.advanced_paid == 1 ? "advance" : "none";
+    }
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      const data = {};
+      formData.forEach((value, key) => {
+        data[key] = value;
+      });
+
+      const res = await fetch("update_order.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const response = await res.text();
+      if (response.trim() === "success") {
+        alert("Order updated successfully!");
+        window.location.href = "order&sales.html";
+      } else {
+        alert("Update failed: " + response);
+      }
+    });
+
+    window.onload = loadOrderData;
+  </script>
+</body>
+</html>

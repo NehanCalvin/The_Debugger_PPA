@@ -5,6 +5,191 @@
   <title>Orders & Sales</title>
   <link rel="stylesheet" href="order&sales.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+  /* Modal container */
+#editModal.modal {
+  display: none;
+  position: fixed;
+  inset: 0;  /* shorthand for top,right,bottom,left = 0 */
+  background: rgba(0, 0, 0, 0.4); /* a bit darker overlay */
+  z-index: 1000;
+
+  display: flex;
+  justify-content: flex-end;  /* right side panel */
+  align-items: center;
+  padding: 20px;
+  backdrop-filter: blur(6px); /* subtle background blur for modern look */
+}
+
+/* Modal content panel */
+.modal-content {
+   background: #2c2c2c;
+  padding: 30px 35px;
+  border-radius: 16px 0 0 16px;
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.15),
+    0 0 15px rgba(255, 255, 255, 0.5) inset;
+  width: 360px;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: pop-in 0.4s ease-in-out;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #1e293b; /* richer dark slate */
+  position: relative;
+  border-left: 6px solid #1c1c1c; /* subtle accent color on left */
+}
+
+/* Modal heading */
+.modal-content h2 {
+  margin-top: 0;
+  margin-bottom: 24px;
+  font-weight: 700;
+  font-size: 28px;
+  color: #fff;
+  text-align: center;
+  letter-spacing: 0.03em;
+  text-shadow: #fff;
+}
+
+/* Labels */
+.modal-content label {
+  display: block;
+  margin: 14px 0 6px;
+  font-weight: 600;
+  font-size: 14.5px;
+  color: #fff;
+  user-select: none;
+}
+
+/* Inputs */
+.modal-content input[type="text"],
+.modal-content input[type="number"] {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.8px solid #94a3b8;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 16px;
+  color: #fff;
+  background-color: #f8fafc;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.modal-content input[type="text"]:focus,
+.modal-content input[type="number"]:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 8px rgba(79, 70, 229, 0.5);
+  outline: none;
+}
+
+/* Checkboxes inside operations label */
+.modal-content label > label {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 10px;
+  font-weight: 500;
+  font-size: 13.5px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.modal-content label > label input[type="checkbox"] {
+  margin-right: 5px;
+  accent-color: #4f46e5;
+  cursor: pointer;
+}
+
+/* Buttons */
+button[type="submit"] {
+  background-color: #4f46e5;
+  color: white;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 10px;
+  font-size: 17px;
+  font-weight: 700;
+  margin-top: 24px;
+  width: 100%;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.5);
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+button[type="submit"]:hover {
+  background-color: #4338ca;
+  box-shadow: 0 6px 14px rgba(67, 56, 202, 0.7);
+}
+
+/* Close button */
+.close-btn {
+  position: absolute;
+  right: 18px;
+  top: 14px;
+  font-size: 28px;
+  cursor: pointer;
+  color: #64748b;
+  transition: color 0.3s ease;
+}
+
+.close-btn:hover {
+  color: #4f46e5;
+  filter: drop-shadow(0 0 3px #4f46e5);
+}
+
+/* Scrollbar styling inside modal */
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background-color: #a5b4fc;
+  border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+/* Base button style */
+button {
+  padding: 8px 16px;
+  margin-right: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #000;
+}
+
+
+button:has(> svg), 
+button:contains("Edit") {
+  background-color: #3b82f6; 
+}
+
+button:contains("Edit"):hover {
+  background-color: #2563eb; 
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
+}
+
+
+button:contains("Delete") {
+  background-color: #ef4444; 
+}
+
+button:contains("Delete"):hover {
+  background-color: #dc2626; 
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
+}
+
+
+  </style>
 </head>
 <body>
   <div class="sidebar">
@@ -21,6 +206,42 @@
     <h1>📋 Orders & Sales</h1>
     <div id="confirmationMessage"></div>
     <div id="ordersContainer">Loading orders...</div>
+  </div>
+<br>
+<br>
+  <!-- Edit Modal -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeEditModal()">&times;</span>
+      <h2>Edit Order</h2>
+      <form id="editOrderForm">
+        <input type="hidden" id="editOrderId" />
+        <label>PO Number: <input type="text" id="editInvoice" required /></label><br/><br/>
+        <label>Company: <input type="text" id="editCompany" required /></label><br/><br/>
+        <label>Client Name: <input type="text" id="editClient" required /></label><br/><br/>
+        <label>Phone: <input type="text" id="editPhone" required /></label><br/><br/>
+        <label>Quantity: <input type="number" id="editQuantity" min="1" required /></label><br/><br/>
+        <label>Selling Price: <input type="number" id="editSellingPrice" min="0" step="0.01" required /></label><br/><br/>
+        
+        <label>Operations:<br/>
+          <label><input type="checkbox" class="editOperation" value="cutting" /> Cutting (15)</label>
+          <label><input type="checkbox" class="editOperation" value="print" /> Print (30)</label>
+          <label><input type="checkbox" class="editOperation" value="embroidery" /> Embroidery (166)</label>
+          <label><input type="checkbox" class="editOperation" value="sublimation" /> Sublimation (25)</label>
+          <label><input type="checkbox" class="editOperation" value="stitch" /> Stitch (130)</label>
+          <label><input type="checkbox" class="editOperation" value="iron" /> Iron (40)</label>
+          <label><input type="checkbox" class="editOperation" value="washing" /> Washing (15)</label>
+        </label><br/><br/>
+
+        <h3>Fabric Items</h3>
+        <div id="editFabricContainer"></div>
+        <button type="button" onclick="addEditFabricItem()">+ Add Fabric Item</button><br/><br/>
+
+        <label>Advance Amount: <input type="number" id="editAdvanceAmount" min="0" value="0" /></label><br/><br/>
+
+        <button type="submit">Save Changes</button>
+      </form>
+    </div>
   </div>
 
   <script>
@@ -84,18 +305,10 @@
             </p>
 
             <p><strong>💰 Advance Paid:</strong> ${order.advance_amount || 0} LKR</p>
-<p><strong>🧾 Remaining Balance:</strong> ${(order.selling_price * order.quantity - order.advance_amount).toFixed(2)} LKR</p>
+            <p><strong>🧾 Remaining Balance:</strong> ${(order.selling_price * order.quantity - (order.advance_amount || 0)).toFixed(2)} LKR</p>
 
-<p><strong>💳 Payment Status:</strong> 
-  <select onchange="updatePaymentStatus('${order.invoice}', this.value)">
-    <option value="none" ${!order.advanced_paid && !order.full_paid ? 'selected' : ''}>Not Received</option>
-    <option value="advance" ${order.advanced_paid == 1 ? 'selected' : ''}>Advance Paid</option>
-    <option value="full" ${order.full_paid == 1 ? 'selected' : ''}>Full Paid</option>
-  </select>
-</p>
-
-
-            <div class="total-price">💰 Total Fabric & Ops: ${order.total_price} LKR</div>
+            <button onclick="editOrder(${order.order_id})">✏️ Edit</button>
+            <button onclick="deleteOrder(${order.order_id})">🗑️ Delete</button>
           `;
 
           container.appendChild(card);
@@ -105,25 +318,214 @@
       }
     }
 
-    function updatePaymentStatus(invoice, status) {
-      fetch('update_payment_status.php', {
+    // Delete order function
+    function deleteOrder(id) {
+      if (!confirm("Are you sure you want to delete this order?")) return;
+
+      fetch('delete_order.php', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ invoice, status })
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({id})
       })
-      .then(res => res.text())
-      .then(response => {
-        if (response.trim() === "success") {
-          alert("Payment status updated.");
-          loadOrders(document.getElementById('searchBox').value); // Reload orders
+      .then(res => res.json())
+      .then(resp => {
+        if (resp.success) {
+          alert("Order deleted.");
+          loadOrders(document.getElementById('searchBox').value);
         } else {
-          alert("Update failed: " + response);
+          alert("Delete failed: " + (resp.error || "Unknown error"));
         }
       })
       .catch(err => alert("Error: " + err));
     }
 
+    // Open Edit Modal and load order data
+    function editOrder(orderId) {
+      fetch('fetch_orders.php?id=' + orderId)
+        .then(res => res.json())
+        .then(order => {
+          if (order.error) {
+            alert(order.error);
+            return;
+          }
+          // Fill form fields
+          document.getElementById('editOrderId').value = order.order_id;
+          document.getElementById('editInvoice').value = order.invoice;
+          document.getElementById('editCompany').value = order.company;
+          document.getElementById('editClient').value = order.client;
+          document.getElementById('editPhone').value = order.phone;
+          document.getElementById('editQuantity').value = order.quantity;
+          document.getElementById('editSellingPrice').value = order.selling_price;
+
+          // Operations checkboxes
+          const ops = (order.operations || '').split(',');
+          document.querySelectorAll('.editOperation').forEach(cb => {
+            cb.checked = ops.includes(cb.value);
+          });
+
+          // Fabric items
+          const fabContainer = document.getElementById('editFabricContainer');
+          fabContainer.innerHTML = '';
+          (order.fabrics || []).forEach((fab, idx) => {
+            fabContainer.appendChild(createFabricEditItem(fab, idx));
+          });
+
+          // Payment info
+          document.getElementById('editAdvanceAmount').value = order.advance_amount || 0;
+
+          document.getElementById('editModal').style.display = 'flex';
+        })
+        .catch(err => alert("Failed to load order data: " + err));
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').style.display = 'none';
+    }
+
+    // Create fabric item edit element
+    function createFabricEditItem(fabric, index) {
+      const div = document.createElement('div');
+      div.className = 'fabric-item-edit';
+      div.dataset.index = index;
+
+      div.innerHTML = `
+        <label>Item/Fabric: <input type="text" class="fab-itemName" value="${fabric.itemName || ''}" required></label><br/>
+        <label>Shop Name: <input type="text" class="fab-shopName" value="${fabric.shopName || ''}" required></label><br/>
+        <label>Bill ID: <input type="text" class="fab-billId" value="${fabric.billId || ''}" required></label><br/>
+        <label>Qty: <input type="number" min="1" class="fab-qty" value="${fabric.qty || 1}" required></label><br/>
+        <label>Amount per Item: <input type="number" min="0" step="0.01" class="fab-amt" value="${fabric.amt || 0}" required></label><br/>
+        <label>Total: <input type="number" class="fab-total" value="${fabric.total || 0}" readonly></label>
+        <button type="button" class="delete-fab-btn" title="Remove Fabric Item" onclick="removeFabricEditItem(this)">×</button>
+      `;
+
+      // Update total on qty or amt change
+      div.querySelector('.fab-qty').addEventListener('input', () => updateFabricTotal(div));
+      div.querySelector('.fab-amt').addEventListener('input', () => updateFabricTotal(div));
+      return div;
+    }
+
+    function updateFabricTotal(div) {
+      const qty = parseFloat(div.querySelector('.fab-qty').value) || 0;
+      const amt = parseFloat(div.querySelector('.fab-amt').value) || 0;
+      const total = qty * amt;
+      div.querySelector('.fab-total').value = total.toFixed(2);
+    }
+
+    function addEditFabricItem() {
+      const container = document.getElementById('editFabricContainer');
+      const newItem = {
+        itemName: '',
+        shopName: '',
+        billId: '',
+        qty: 1,
+        amt: 0,
+        total: 0
+      };
+      container.appendChild(createFabricEditItem(newItem, container.children.length));
+    }
+
+    function removeFabricEditItem(button) {
+      button.parentElement.remove();
+    }
+
+    // Handle edit form submit
+    document.getElementById('editOrderForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const id = document.getElementById('editOrderId').value;
+      const invoice = document.getElementById('editInvoice').value.trim();
+      const company = document.getElementById('editCompany').value.trim();
+      const client = document.getElementById('editClient').value.trim();
+      const phone = document.getElementById('editPhone').value.trim();
+      const quantity = parseInt(document.getElementById('editQuantity').value);
+      const selling_price = parseFloat(document.getElementById('editSellingPrice').value);
+
+      // Operations
+      const ops = [...document.querySelectorAll('.editOperation:checked')].map(cb => cb.value).join(',');
+
+      // Fabrics
+      const fabricDivs = document.querySelectorAll('#editFabricContainer .fabric-item-edit');
+      const fabrics = [];
+      for (const div of fabricDivs) {
+        const itemName = div.querySelector('.fab-itemName').value.trim();
+        const shopName = div.querySelector('.fab-shopName').value.trim();
+        const billId = div.querySelector('.fab-billId').value.trim();
+        const qty = parseInt(div.querySelector('.fab-qty').value);
+        const amt = parseFloat(div.querySelector('.fab-amt').value);
+        const total = parseFloat(div.querySelector('.fab-total').value);
+
+        if (!itemName || !shopName || !billId || isNaN(qty) || isNaN(amt) || isNaN(total)) {
+          alert('Please fill all fabric item fields correctly.');
+          return;
+        }
+        fabrics.push({itemName, shopName, billId, qty, amt, total});
+      }
+
+      // Calculate cost (fabric + ops)
+      let operationCosts = {
+        cutting: 15,
+        print: 30,
+        embroidery: 166,
+        sublimation: 25,
+        stitch: 130,
+        iron: 40,
+        washing: 15
+      };
+      let opsCost = 0;
+      for (const op of ops.split(',')) {
+        if (operationCosts[op]) {
+          opsCost += operationCosts[op] * quantity;
+        }
+      }
+      let fabricCost = fabrics.reduce((sum, f) => sum + f.total, 0);
+      let total_cost = opsCost + fabricCost;
+      let profit = (selling_price * quantity) - total_cost;
+
+      // Advance amount
+      let advance_amount = parseFloat(document.getElementById('editAdvanceAmount').value);
+      if (isNaN(advance_amount) || advance_amount < 0) advance_amount = 0;
+
+      // You might want to track advanced_paid and full_paid here as well — set to 0 by default for now
+      let advanced_paid = advance_amount > 0 ? advance_amount : 0;
+      let full_paid = advance_amount >= (selling_price * quantity) ? 1 : 0;
+
+      const payload = {
+        order_id: parseInt(id),
+        invoice,
+        company,
+        client,
+        phone,
+        quantity,
+        operations: ops,
+        total_price: total_cost,
+        cost: total_cost,
+        selling_price,
+        profit,
+        advance_amount,
+        advanced_paid,
+        full_paid
+      };
+
+      fetch('update_order.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(resp => {
+        if (resp.success) {
+          alert('Order updated successfully.');
+          closeEditModal();
+          loadOrders(document.getElementById('searchBox').value);
+        } else {
+          alert('Update failed: ' + (resp.error || 'Unknown error'));
+        }
+      })
+      .catch(err => alert('Error updating order: ' + err));
+    });
+
     window.onload = () => loadOrders();
+
   </script>
 </body>
 </html>
