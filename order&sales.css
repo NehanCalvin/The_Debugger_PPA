@@ -142,3 +142,100 @@
     width: fit-content;
   }
   
+
+  .order-actions {
+      margin-top: 10px;
+    }
+    .edit-btn, .delete-btn {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 4px;
+      margin-right: 8px;
+      cursor: pointer;
+    }
+    .edit-btn {
+      background-color: #ffcc00;
+      color: #000;
+    }
+    .delete-btn {
+      background-color: #ff4444;
+      color: white;
+    }
+
+
+
+    .modal-content {
+  background: linear-gradient(135deg, #fdfbfb, #ebedee);
+  padding: 25px 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 25px rgba(0,0,0,0.25);
+  max-width: 600px;
+  width: 100%;
+  animation: pop-in 0.4s ease-in-out;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+@keyframes pop-in {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.modal h2 {
+  margin-top: 0;
+  color: #2c3e50;
+  font-size: 24px;
+  text-align: center;
+}
+
+.modal-content label {
+  display: block;
+  margin: 10px 0 6px;
+  font-weight: 500;
+  color: #2d3436;
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="number"] {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
+
+button[type="submit"] {
+  background-color: #27ae60;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  margin-top: 15px;
+  width: 100%;
+  transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+  background-color: #219150;
+}
+
+.close-btn {
+  position: absolute;
+  right: 18px;
+  top: 14px;
+  font-size: 28px;
+  cursor: pointer;
+  color: #888;
+  transition: color 0.3s;
+}
+
+.close-btn:hover {
+  color: #e74c3c;
+}
