@@ -90,7 +90,8 @@ form {
   }
   
   form input[type="text"],
-  form input[type="number"] {
+  form input[type="number"],
+  form input[type="tel"] {
     width: 100%;
     padding: 12px 16px;
     border: none;
@@ -108,6 +109,32 @@ form {
     border-color: #ff416c;
     box-shadow: 0 0 5px #ff416c;
   }
+  
+  /* Specific styling for tel input */
+  form input[type="tel"] {
+    width: 100% !important;
+    padding: 12px 16px !important;
+    border: 1px solid #333 !important;
+    border-radius: 10px !important;
+    margin-bottom: 15px !important;
+    background: #121212 !important;
+    color: #fff !important;
+    transition: all 0.3s ease !important;
+    font-size: 14px !important;
+    display: block !important;
+    box-sizing: border-box !important;
+  }
+  
+  form input[type="tel"]:focus {
+    outline: none !important;
+    border-color: #ff416c !important;
+    box-shadow: 0 0 5px #ff416c !important;
+  }
+  
+  form input[type="tel"]::placeholder {
+    color: #999 !important;
+    opacity: 0.8 !important;
+  }
 
   label input[type="checkbox"] {
     margin-right: 10px;
@@ -124,31 +151,63 @@ form {
     padding: 20px;
     background: #222;
     border-radius: 10px;
-    border-left: 5px solid #ff4b2b;
+    border-left: 5px solid #ff416c;
     transition: all 0.3s ease;
   }
   
+  /*total*/
   .summary p {
     font-weight: bold;
     margin-bottom: 15px;
-    color: #ff4b2b;
+    color: #ff416c;
     font-size: 17px;
   }
 
-  button {
-    margin-top: 25px;
+  /*file input wrapper*/
+  .file-input-wrapper {
+    margin-bottom: 15px;
+  }
+  
+  /*upload photo button*/
+  .upload-photo-btn {
     padding: 12px 24px;
     border: none;
-    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    background: linear-gradient(135deg, #dc3545, #c82333);
     color: white;
     font-size: 15px;
     border-radius: 8px;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
   }
   
-  button:hover {
-    background: linear-gradient(135deg, #ff4b2b, #ff416c);
+  .upload-photo-btn:hover {
+    background: linear-gradient(135deg, #c82333, #dc3545);
+  }
+  
+  /*submit button*/
+  .submit-btn,
+  button[type="submit"].submit-btn,
+  button.submit-btn {
+    margin-top: 25px ;
+    padding: 12px 24px ;
+    border: none ;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white ;
+    font-size: 15px ;
+    border-radius: 8px ;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+  }
+  
+  .submit-btn:hover,
+  button[type="submit"].submit-btn:hover,
+  button.submit-btn:hover {
+    background: linear-gradient(135deg, #45a049, #4CAF50);
   }
   
   /* Responsive */
@@ -159,14 +218,16 @@ form {
       position: relative;
       flex-direction: row;
       justify-content: space-around;
+      padding-top: 10px;
     }
   
     .sidebar a {
       flex-grow: 1;
       justify-content: center;
-      padding: 12px 10px;
+      padding: 12px 8px;
       border-left: none;
       border-bottom: 2px solid transparent;
+      font-size: 14px;
     }
   
     .sidebar a.active {
@@ -176,7 +237,82 @@ form {
   
     .content {
       margin-left: 0;
-      margin-top: 120px;
-      padding: 20px;
+      margin-top: 80px;
+      padding: 15px;
+    }
+    
+    .content h1 {
+      font-size: 24px;
+      text-align: center;
+    }
+    
+    form {
+      padding: 20px;
+      margin-top: 15px;
+    }
+    
+    form label {
+      font-size: 14px;
+    }
+    
+    form input[type="text"],
+    form input[type="number"],
+    form input[type="tel"] {
+      padding: 10px 14px;
+      font-size: 14px;
+    }
+    
+    .upload-photo-btn {
+      padding: 10px 18px;
+      font-size: 14px;
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .submit-btn {
+      width: 100%;
+      padding: 14px 20px;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+    
+    .summary {
+      margin-top: 20px;
+      padding: 15px;
+      text-align: center;
+    }
+}
+
+@media screen and (max-width: 480px){
+    .sidebar a {
+      padding: 10px 5px;
+      font-size: 12px;
+    }
+    
+    .sidebar a i {
+      display: none;
+    }
+    
+    .content {
+      padding: 10px;
+    }
+    
+    .content h1 {
+      font-size: 20px;
+    }
+    
+    form {
+      padding: 15px;
+    }
+    
+    form label {
+      font-size: 13px;
+    }
+    
+    form input[type="text"],
+    form input[type="number"],
+    form input[type="tel"] {
+      padding: 8px 12px;
+      font-size: 13px;
     }
 }
