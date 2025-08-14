@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-    <head><meta charset="UTF-8">
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -19,7 +21,8 @@
         <div class="content">
             <h1>Create New Raw Inventory</h1>
 
-            <form id="orderForm" method="POST" action="inventory_save.php">
+            
+            <form id="orderForm" method="POST" action="inventory_save.php" enctype="multipart/form-data">
                 <section class="form-group">
                     <label for="itemName"><i class="fas fa-file-invoice"></i> Item Name</label>
                     <input type="text" id="itemName" name="itemName" required />
@@ -28,48 +31,125 @@
                     <input type="text" id="colour" name="colour" required />
 
                     <label for="rawprice"><i class="fa-solid fa-sack-dollar"></i> Price per Item (LKR)</label>
-                    <input type="text" id="rawprice" name="rawprice" required />
+                    <input type="number" id="rawprice" name="rawprice" step="0.01" min="0.01" required />
             
                     <label for="supplier"><i class="fas fa-user"></i> Supplier Name</label>
                     <input type="text" id="supplier" name="supplier" required />
             
                     <label for="phone"><i class="fas fa-phone"></i> Supplier Contact</label>
-                    <input type="text" id="phone" name="phone" required />
+                    <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" maxlength="10" title="Please enter 10 digits" required />
                     
                     <label for="quantity"><i class="fas fa-sort-numeric-up"></i> Quantity</label>
-                    <input type="number" id="quantity" name="quantity" value="1" min="1" required />
-                </section>
+                    <input type="number" id="quantity" name="quantity" value="1" min="1" step="1" required />
 
-                <section class="summary">
-                    <p class="final-price">Total Price: <span id="total">0.00</span> LKR</p>
+                    <label for="itemImage"><i class="fas fa-image"></i> Item Image</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="itemImage" name="itemImage" accept="image/*" required style="display: none;"/>
+                        <button type="button" class="upload-photo-btn" onclick="document.getElementById('itemImage').click()">
+                            <i class="fas fa-upload"></i> Upload Photo
+                        </button>
+                    </div>
+                    <div id="imagePreview" class="image-preview"></div>
                 </section>
-                <button type="submit" onclick="prepareFormBeforeSubmit()">Submit Order</button>
+                
+                <section class="summary">
+                    <p class="total_price">Total Price: <span id="total_price">0.00</span> LKR</p>
+                </section>
+                <br>
+                <button type="submit" class="submit-btn">Submit Item</button>
             </form>
         </div>
 
         <script>
             const quantityInput = document.getElementById('quantity');
             const rawpriceInput = document.getElementById('rawprice');
+            const totalSpan = document.getElementById('total_price');
+
+            const imageInput = document.getElementById('itemImage');
+            const imagePreview = document.getElementById('imagePreview');
 
             function calculateTotal() {
-            const quantity = parseInt(quantityInput.value) || 0;
-            const rawprice = parseFloat(rawpriceInput.value) || 0;
+                const quantity = parseInt(quantityInput.value) || 0;
+                const rawprice = parseFloat(rawpriceInput.value) || 0;
 
-            let totalCost = 0;
-            totalCost = price * quantity;
-            
-            totalSpan.textContent = totalCost.toFixed(2);
-            document.getElementById('totalCost').textContent = totalCost.toFixed(2);
-
-            
-
+                const totalCost = rawprice * quantity;
+                
+                totalSpan.textContent = formatNumberWithCommas(totalCost.toFixed(2));
             }
+
+            function formatNumberWithCommas(number) {
+                return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            }
+
+            function previewImage() {
+                const file = imageInput.files[0];
+                
+                if (file) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        imagePreview.innerHTML = `
+                            <img src="${e.target.result}" alt="Item Preview" style="max-width: 200px; max-height: 200px; border-radius: 5px; margin-top: 10px;" />
+                            <p style="margin-top: 5px; font-size: 12px; color: #666;">Selected: ${file.name}</p>
+                        `;
+                    };
+                    
+                    reader.readAsDataURL(file);
+                } else {
+                    imagePreview.innerHTML = '';
+                }
+            }
+
+            // Handle form submission with AJAX
+            document.getElementById('orderForm').addEventListener('submit', function(e) {
+                e.preventDefault(); // Prevent default form submission
+                
+                const formData = new FormData(this);
+                const submitButton = document.querySelector('button[type="submit"]');
+                
+                // Disable submit button to prevent double submission
+                submitButton.disabled = true;
+                submitButton.textContent = 'Submitting...';
+                
+                fetch('inventory_save.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Success - show alert and reset form
+                        alert('Inventory Saved Successfully!');
+                        document.getElementById('orderForm').reset();
+                        imagePreview.innerHTML = '';
+                        calculateTotal();
+                    } else {
+                        // Error - show error message
+                        alert('Failed to save inventory: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while saving the inventory. Please try again.');
+                })
+                .finally(() => {
+                    // Re-enable submit button
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submit Item';
+                });
+            });
 
             quantityInput.addEventListener('input', calculateTotal);
             rawpriceInput.addEventListener('input', calculateTotal);
+            imageInput.addEventListener('change', previewImage);
 
             window.onload = () => {
-            calculateTotal();
+                calculateTotal();
             };
         </script>
     </body>

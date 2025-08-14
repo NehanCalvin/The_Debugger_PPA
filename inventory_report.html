@@ -1,16 +1,20 @@
 <!DOCTYPE html>
-    <head><meta charset="UTF-8">
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <title>Raw Inventory Management</title>
-        <link rel="stylesheet" href="inventory_manage.css" />
+        <title>Inventory Reports</title>
+        <link rel="stylesheet" href="inventory_report.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     </head>
 
     <body>
         <div class="sidebar">
-            <a href="admin.html"> Dashboard</a>
+            <a href="admin.html">Dashboard</a>
             <a href="inventory_create.html"><i class="fas fa-plus-circle"></i> Create Inventory</a>
             <a href="inventory_manage.html"><i class="fas fa-chart-line"></i> Manage Inventory</a>
             <a class="active" href="#"><i class="fas fa-file-alt"></i> Reports</a>
@@ -18,10 +22,433 @@
 
         <div class="content">
             <h1>Inventory Report</h1>
+            <br><br>
+            <!-- Report Filters -->
+            <div class="report-filters">
+                <div class="filter-group">
+                    <label for="reportType"><i class="fas fa-chart-bar"></i> Report Type</label>
+                    <select id="reportType" onchange="toggleDateFilters()">
+                        <option value="activity">Activity Log</option>
+                        <option value="inventory">Current Inventory</option>
+                        <option value="summary">Summary Report</option>
+                    </select>
+                </div>
 
-            <form>
-                
-            </form>
+                <div class="filter-group" id="actionFilter">
+                    <label for="actionType"><i class="fas fa-filter"></i> Action Filter</label>
+                    <select id="actionType">
+                        <option value="all">All Actions</option>
+                        <option value="CREATE">Created Items</option>
+                        <option value="UPDATE">Updated Items</option>
+                        <option value="DELETE">Deleted Items</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="dateRange"><i class="fas fa-calendar"></i> Date Range</label>
+                    <select id="dateRange" onchange="toggleCustomDateRange()">
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="year">This Year</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+
+                <div class="filter-group" id="startDateFilter" style="display: none;">
+                    <label for="startDate"><i class="fas fa-calendar-alt"></i> Start Date</label>
+                    <input type="date" id="startDate">
+                </div>
+
+                <div class="filter-group" id="endDateFilter" style="display: none;">
+                    <label for="endDate"><i class="fas fa-calendar-alt"></i> End Date</label>
+                    <input type="date" id="endDate">
+                </div>
+            </div>
+
+            <!-- Report Actions -->
+            <div class="report-actions">
+                <button class="btn btn-primary" onclick="generateReport()"><i class="fas fa-sync"></i> Generate Report</button>
+                <button class="btn btn-success" onclick="exportToPDF()"><i class="fas fa-file-pdf"></i> Export to PDF</button>
+                <button class="btn btn-secondary" onclick="clearFilters()"><i class="fas fa-times"></i> Clear Filters</button>
+            </div>
+
+            <!-- Report Summary -->
+            <div id="reportSummary" class="report-summary" style="display: none;">
+                <!-- Summary cards will be dynamically inserted here -->
+            </div>
+
+            <!-- Loading Message -->
+            <div id="loadingMessage" class="loading" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i> Generating report...
+            </div>
+
+            <!-- Report Table -->
+            <div id="reportContainer" class="report-table" style="display: none;">
+                <div class="table-container">
+                    <table id="reportTable">
+                        <thead id="tableHeader">
+                            <!-- Headers will be dynamically inserted -->
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Data will be dynamically inserted -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- No Data Message -->
+            <div id="noDataMessage" class="no-data" style="display: none;">
+                <i class="fas fa-chart-line" style="font-size: 48px; margin-bottom: 20px; color: #444;"></i>
+                <h3>No Data Found</h3>
+                <p>No records found for the selected criteria. Try adjusting your filters.</p>
+            </div>
         </div>
+
+        <script>
+            let currentReportData = [];
+            let currentReportType = 'activity';
+
+            // Initialize date inputs with today's date
+            window.onload = function() {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('startDate').value = today;
+                document.getElementById('endDate').value = today;
+                generateReport();
+            };
+
+            function toggleDateFilters() {
+                const reportType = document.getElementById('reportType').value;
+                const actionFilter = document.getElementById('actionFilter');
+                
+                if (reportType === 'activity') {
+                    actionFilter.style.display = 'flex';
+                } else {
+                    actionFilter.style.display = 'none';
+                }
+                
+                currentReportType = reportType;
+            }
+
+            function toggleCustomDateRange() {
+                const dateRange = document.getElementById('dateRange').value;
+                const startDateFilter = document.getElementById('startDateFilter');
+                const endDateFilter = document.getElementById('endDateFilter');
+                
+                if (dateRange === 'custom') {
+                    startDateFilter.style.display = 'flex';
+                    endDateFilter.style.display = 'flex';
+                } else {
+                    startDateFilter.style.display = 'none';
+                    endDateFilter.style.display = 'none';
+                }
+            }
+
+            function getDateRange() {
+                const dateRange = document.getElementById('dateRange').value;
+                const today = new Date();
+                let startDate, endDate;
+
+                switch (dateRange) {
+                    case 'today':
+                        startDate = endDate = today.toISOString().split('T')[0];
+                        break;
+                    case 'week':
+                        const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+                        startDate = startOfWeek.toISOString().split('T')[0];
+                        endDate = new Date().toISOString().split('T')[0];
+                        break;
+                    case 'month':
+                        startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+                        endDate = new Date().toISOString().split('T')[0];
+                        break;
+                    case 'year':
+                        startDate = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0];
+                        endDate = new Date().toISOString().split('T')[0];
+                        break;
+                    case 'custom':
+                        startDate = document.getElementById('startDate').value;
+                        endDate = document.getElementById('endDate').value;
+                        break;
+                }
+
+                return { startDate, endDate };
+            }
+
+            async function generateReport() {
+                const reportType = document.getElementById('reportType').value;
+                const actionType = document.getElementById('actionType').value;
+                const { startDate, endDate } = getDateRange();
+
+                // Show loading
+                document.getElementById('loadingMessage').style.display = 'block';
+                document.getElementById('reportContainer').style.display = 'none';
+                document.getElementById('reportSummary').style.display = 'none';
+                document.getElementById('noDataMessage').style.display = 'none';
+
+                try {
+                    const response = await fetch('inventory_report_api.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            reportType: reportType,
+                            actionType: actionType,
+                            startDate: startDate,
+                            endDate: endDate
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        currentReportData = data.data;
+                        displayReport(data.data, data.summary);
+                    } else {
+                        throw new Error(data.message || 'Failed to generate report');
+                    }
+                } catch (error) {
+                    console.error('Error generating report:', error);
+                    alert('Error generating report: ' + error.message);
+                } finally {
+                    document.getElementById('loadingMessage').style.display = 'none';
+                }
+            }
+
+            function displayReport(data, summary) {
+                if (!data || data.length === 0) {
+                    document.getElementById('noDataMessage').style.display = 'block';
+                    return;
+                }
+
+                // Display summary if provided
+                if (summary) {
+                    displaySummary(summary);
+                }
+
+                const reportType = document.getElementById('reportType').value;
+                const tableHeader = document.getElementById('tableHeader');
+                const tableBody = document.getElementById('tableBody');
+
+                // Clear previous data
+                tableHeader.innerHTML = '';
+                tableBody.innerHTML = '';
+
+                if (reportType === 'activity') {
+                    displayActivityReport(data, tableHeader, tableBody);
+                } else if (reportType === 'inventory') {
+                    displayInventoryReport(data, tableHeader, tableBody);
+                } else if (reportType === 'summary') {
+                    displaySummaryReport(data, tableHeader, tableBody);
+                }
+
+                document.getElementById('reportContainer').style.display = 'block';
+            }
+
+            function displaySummary(summary) {
+                const summaryContainer = document.getElementById('reportSummary');
+                summaryContainer.innerHTML = '';
+
+                Object.keys(summary).forEach(key => {
+                    const card = document.createElement('div');
+                    card.className = 'summary-card';
+                    card.innerHTML = `
+                        <h3>${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</h3>
+                        <div class="value">${formatNumber(summary[key])}</div>
+                    `;
+                    summaryContainer.appendChild(card);
+                });
+
+                summaryContainer.style.display = 'grid';
+            }
+
+            function displayActivityReport(data, tableHeader, tableBody) {
+                tableHeader.innerHTML = `
+                    <tr>
+                        <th>Date/Time</th>
+                        <th>Action</th>
+                        <th>Item Name</th>
+                        <th>Supplier</th>
+                        <th>Quantity</th>
+                        <th>Total Price (LKR)</th>
+                        <th>Details</th>
+                    </tr>
+                `;
+
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formatDateTime(item.action_date)}</td>
+                        <td><span class="action-badge action-${item.action.toLowerCase()}">${item.action}</span></td>
+                        <td>${item.itemName || 'N/A'}</td>
+                        <td>${item.supplier || 'N/A'}</td>
+                        <td>${formatNumber(item.quantity)}</td>
+                        <td>${formatCurrency(item.total_price)}</td>
+                        <td><button class="btn btn-secondary btn-sm" onclick="showDetails(${item.id})">View</button></td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+
+            function displayInventoryReport(data, tableHeader, tableBody) {
+                tableHeader.innerHTML = `
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Colour</th>
+                        <th>Price per Item (LKR)</th>
+                        <th>Supplier</th>
+                        <th>Contact</th>
+                        <th>Quantity</th>
+                        <th>Total Price (LKR)</th>
+                        <th>Created Date</th>
+                        <th>Last Updated</th>
+                    </tr>
+                `;
+
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.itemName}</td>
+                        <td>${item.colour}</td>
+                        <td>${formatCurrency(item.rawprice)}</td>
+                        <td>${item.supplier}</td>
+                        <td>${item.phone}</td>
+                        <td>${formatNumber(item.quantity)}</td>
+                        <td>${formatCurrency(item.total_price)}</td>
+                        <td>${formatDate(item.created_date)}</td>
+                        <td>${formatDate(item.updated_date)}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+
+            function displaySummaryReport(data, tableHeader, tableBody) {
+                tableHeader.innerHTML = `
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                    </tr>
+                `;
+
+                Object.keys(data).forEach(key => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</td>
+                        <td>${formatNumber(data[key])}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+
+            function showDetails(logId) {
+                const item = currentReportData.find(item => item.id === logId);
+                if (item && item.change_details) {
+                    try {
+                        const details = JSON.parse(item.change_details);
+                        const detailsText = Object.keys(details).map(key => `${key}: ${details[key]}`).join('\n');
+                        alert('Change Details:\n\n' + detailsText);
+                    } catch (e) {
+                        alert('Change Details:\n\n' + item.change_details);
+                    }
+                } else {
+                    alert('No details available for this item.');
+                }
+            }
+
+            function clearFilters() {
+                document.getElementById('reportType').value = 'activity';
+                document.getElementById('actionType').value = 'all';
+                document.getElementById('dateRange').value = 'today';
+                toggleDateFilters();
+                toggleCustomDateRange();
+                generateReport();
+            }
+
+            function exportToPDF() {
+                if (!currentReportData || currentReportData.length === 0) {
+                    alert('No data to export. Please generate a report first.');
+                    return;
+                }
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                const reportType = document.getElementById('reportType').value;
+                const { startDate, endDate } = getDateRange();
+                
+                // Add title
+                doc.setFontSize(18);
+                doc.text('Inventory Report', 20, 20);
+                
+                // Add report details
+                doc.setFontSize(12);
+                doc.text(`Report Type: ${reportType.charAt(0).toUpperCase() + reportType.slice(1)}`, 20, 35);
+                doc.text(`Date Range: ${startDate} to ${endDate}`, 20, 45);
+                doc.text(`Generated: ${new Date().toLocaleString()}`, 20, 55);
+                
+                // Prepare table data
+                let headers, rows;
+                
+                if (reportType === 'activity') {
+                    headers = ['Date/Time', 'Action', 'Item Name', 'Supplier', 'Quantity', 'Total Price'];
+                    rows = currentReportData.map(item => [
+                        formatDateTime(item.action_date),
+                        item.action,
+                        item.itemName || 'N/A',
+                        item.supplier || 'N/A',
+                        formatNumber(item.quantity),
+                        formatCurrency(item.total_price)
+                    ]);
+                } else if (reportType === 'inventory') {
+                    headers = ['Item Name', 'Colour', 'Price/Item', 'Supplier', 'Quantity', 'Total Price', 'Created'];
+                    rows = currentReportData.map(item => [
+                        item.itemName,
+                        item.colour,
+                        formatCurrency(item.rawprice),
+                        item.supplier,
+                        formatNumber(item.quantity),
+                        formatCurrency(item.total_price),
+                        formatDate(item.created_date)
+                    ]);
+                }
+                
+                // Add table
+                doc.autoTable({
+                    head: [headers],
+                    body: rows,
+                    startY: 70,
+                    styles: { fontSize: 8 },
+                    headStyles: { fillColor: [41, 128, 185] }
+                });
+                
+                // Save PDF
+                const filename = `inventory_report_${reportType}_${startDate}_${endDate}.pdf`;
+                doc.save(filename);
+            }
+
+            // Utility functions
+            function formatNumber(num) {
+                if (!num) return '0';
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            }
+
+            function formatCurrency(amount) {
+                if (!amount) return '0.00';
+                return formatNumber(parseFloat(amount).toFixed(2));
+            }
+
+            function formatDate(dateString) {
+                if (!dateString) return 'N/A';
+                const date = new Date(dateString);
+                return date.toLocaleDateString();
+            }
+
+            function formatDateTime(dateString) {
+                if (!dateString) return 'N/A';
+                const date = new Date(dateString);
+                return date.toLocaleString();
+            }
+        </script>
     </body>
 </html>
