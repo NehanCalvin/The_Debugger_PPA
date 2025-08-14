@@ -1,0 +1,263 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #1c1c1c;
+  color: #fff;
+  display: flex;
+}
+
+/*Sidebar Styles*/
+.sidebar {
+  width: 220px;
+  height: 100vh;
+  background: #2c2c2c;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding-top: 40px;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.6);
+}
+
+.sidebar a {
+  color: #ccc;
+  padding: 15px 25px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+  font-size: 16px;
+  border-left: 4px solid transparent;
+}
+
+.sidebar a.active {
+  background: linear-gradient(135deg, #ff416c, #ff4b2b);
+  color: #fff;
+  font-weight: bold;
+  border-left: 4px solid #fff;
+}
+
+.sidebar a:hover:not(.active) {
+  background-color: #3a3a3a;
+  color: #fff;
+  border-left: 4px solid #ff416c;
+}
+
+/*body*/
+.content {
+  margin-left: 220px;
+  padding: 40px;
+  flex: 1;
+}
+
+.content h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+  color: #ff416c;
+}
+
+.content p {
+  font-size: 18px;
+  line-height: 1.6;
+  color: #ccc;
+}
+
+/*Report Filter*/
+.report-filters {
+    background: #2a2a2a;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    color: #ff416c;
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+
+.filter-group select, .filter-group input {
+    padding: 8px;
+    border: 1px solid #444;
+    background: #1a1a1a;
+    color: #fff;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.filter-group select option {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 8px;
+}
+
+.filter-group select option:hover {
+    background: #ff416c !important;
+    color: white !important;
+}
+
+.filter-group select:focus {
+    border-color: #ff416c;
+    outline: none;
+    box-shadow: 0 0 5px rgba(255, 65, 108, 0.5);
+}
+
+/*Report Action Btns*/
+.report-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.3s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    color: white;
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.8;
+}
+
+/*Report Summary*/
+.report-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.summary-card {
+    background: #2a2a2a;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.summary-card h3 {
+    color: #fff;
+    margin: 0 0 10px 0;
+    font-size: 18px;
+}
+
+.summary-card .value {
+    color: #28a745;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/*Report*/
+.report-table {
+    background: #2a2a2a;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table-container {
+    overflow-x: auto;
+    max-height: 600px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #fff;
+}
+
+th {
+    background: #1a1a1a;
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #444;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid #333;
+}
+
+/* Table row hover effect */
+table tbody tr {
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+table tbody tr:hover {
+    border-color: #ff416c;
+    background-color: rgba(255, 65, 108, 0.1);
+}
+
+.action-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.action-create {
+    background: #28a745;
+    color: white;
+}
+
+.action-update {
+    background: #ffc107;
+    color: #212529;
+}
+
+.action-delete {
+    background: #dc3545;
+    color: white;
+}
+
+.loading {
+    text-align: center;
+    color: #fff;
+    padding: 40px;
+}
+
+.no-data {
+    text-align: center;
+    color: #888;
+    padding: 40px;
+}
