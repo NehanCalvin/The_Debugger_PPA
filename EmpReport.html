@@ -1,0 +1,216 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monthly Employee Report</title>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+    body {
+        margin: 0;
+        background-color: #1e1e1e;
+        font-family: Arial, sans-serif;
+        color: white;
+    }
+    .sidebar {
+        width: 220px;
+        height: 100vh;
+        background: #2c2c2c;
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        padding-top: 40px;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.6);
+    }
+    .sidebar a {
+        color: #ccc;
+        padding: 15px 25px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.3s ease;
+        font-size: 16px;
+        border-left: 4px solid transparent;
+    }
+    .sidebar a.active {
+        background: linear-gradient(135deg, #ff416c, #ff4b2b);
+        color: #fff;
+        font-weight: bold;
+        border-left: 4px solid #fff;
+    }
+    .sidebar a:hover:not(.active) {
+        background-color: #3a3a3a;
+        color: #fff;
+        border-left: 4px solid #ff416c;
+    }
+    .main-content {
+        margin-left: 220px;
+        padding: 20px;
+    }
+    h1 {
+        margin-bottom: 20px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: #2c2c2c;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    table th, table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #444;
+    }
+    table th {
+        background: linear-gradient(135deg, #ff416c, #ff4b2b);
+        color: white;
+        font-weight: bold;
+    }
+    table tr:nth-child(even) { background: #292929; }
+    table tr:hover { background-color: #3a3a3a; }
+    input[type="month"] {
+        padding: 8px 12px;
+        margin-right: 10px;
+        border-radius: 5px;
+        border: 1px solid #444;
+        background-color: #1e1e1e;
+        color: white;
+    }
+    button {
+        background: linear-gradient(to right, red, darkred);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    button:hover {
+        background: linear-gradient(to right, darkred, red);
+    }
+    canvas { background-color: #2c2c2c; margin-top: 20px; border-radius: 10px; padding: 10px; }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+    <a href="empDetails.html">Employee details</a>
+    <a href="employee.html">Add Employee</a>
+    <a href="EmpManage.html">Manage Employees</a>
+    <a href="EmpPayment.html">Employee Payments</a>
+    <a href="EmpReport.html" class="active">Reports</a>
+    <a href="admin.html" class="dashboard-btn">Dashboard</a>
+</div>
+
+<div class="main-content">
+    <h1>Monthly Employee Report</h1>
+
+    <input type="month" id="month">
+    <button id="generate-report">Generate Report</button>
+    <button onclick="exportToExcel()">Export to Excel</button>
+    <button onclick="exportToPDF()">Export to PDF</button>
+
+    <table id="report-table">
+        <thead>
+            <tr>
+                <th>Employee Name</th>
+                <th>Total Items</th>
+                <th>Total Payment (Rs.)</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <canvas id="paymentChart" width="800" height="400"></canvas>
+</div>
+
+<script>
+let chart;
+
+const monthInput = document.getElementById('month');
+const generateBtn = document.getElementById('generate-report');
+const tbody = document.querySelector('#report-table tbody');
+const ctx = document.getElementById('paymentChart').getContext('2d');
+
+generateBtn.addEventListener('click', () => {
+    const selected = monthInput.value;
+    if (!selected) return alert('Please select a month.');
+    const [year, month] = selected.split('-');
+
+    fetch(`get_monthly_report.php?year=${year}&month=${month}`)
+        .then(res => res.json())
+        .then(data => {
+            tbody.innerHTML = '';
+            const labels = [];
+            const payments = [];
+
+            if(data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3">No records found.</td></tr>';
+            } else {
+                data.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${row.name}</td>
+                        <td>${row.total_items}</td>
+                        <td>${parseFloat(row.total_payment).toFixed(2)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                    labels.push(row.name);
+                    payments.push(parseFloat(row.total_payment));
+                });
+            }
+
+            if(chart) chart.destroy();
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Payment (Rs.)',
+                        data: payments,
+                        backgroundColor: '#4ade80'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        })
+        .catch(err => console.error('Error fetching report:', err));
+});
+
+async function exportToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF("p", "mm", "a4");
+    const canvas = await html2canvas(document.querySelector('.main-content'));
+    const imgData = canvas.toDataURL("image/png");
+    const imgWidth = 190;
+    const imgHeight = canvas.height * imgWidth / canvas.width;
+    doc.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+    doc.save("Employee_Report.pdf");
+}
+
+function exportToExcel() {
+    const table = document.getElementById("report-table");
+    const wb = XLSX.utils.table_to_book(table, { sheet: "Employee Payments" });
+    XLSX.writeFile(wb, "Employee_Report.xlsx");
+}
+</script>
+
+</body>
+</html>
+
+

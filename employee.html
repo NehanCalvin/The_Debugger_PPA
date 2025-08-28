@@ -1,60 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="employee.css">
+    <link rel="stylesheet" href="employee.css?v=<?= time() ?>">
+
     <title>Add Employee</title>
 </head>
 <body>
 
-    <!-- Include Sidebar -->
     <div class="sidebar">
         <a href="empDetails.html">Employee details</a>
         <a href="employee.html" class="active">Add Employee</a>
-        <a href="ManageEmp.html">Manage Employees</a>
+        <a href="EmpManage.html"> Employees</a>
         <a href="EmpReport.html">Reports</a>
-        <a href="admin.html" class="dashboard-btn">Dashboard</a>
+        <a href="admin.html" class="dashboard-btn"><strong>Dashboard</strong></a>
     </div>
 
     <div class="main-content">
         <h1>Add Employee</h1>
         <div class="form-box">
-            <input type="text" placeholder="Employee Name">
-            <input type="text" placeholder="Employee Address">
-            <input type="text" placeholder="Phone">
-            <input type="text" placeholder="Job Role">
-            <h3>Bank details</h3>
-            <input type="text" placeholder="Bank Name">
-            <input type="text" placeholder="Branch">
-            <input type="text" placeholder="Account No">
-            <input type="text" placeholder="Account Holder Name">
-            <button>Submit Order</button>
+     <form id="add-employee-form" action="add_employee.php" method="post" enctype="multipart/form-data">
+    <input type="text" id="emp-name" placeholder="Employee Name" required
+           pattern="^[A-Za-z\s]{3,}$"
+           title="Name must be at least 3 letters and contain only alphabets and spaces">
+    <input type="text" id="emp-address" placeholder="Employee Address" required
+           minlength="5"
+           title="Address must be at least 5 characters long">
+
+    <input type="tel" id="emp-phone" placeholder="Phone" required
+           pattern="^\d{10}$"
+           maxlength="10"
+           title="Enter a valid 10-digit phone number">
+
+    <input type="text" id="emp-job" placeholder="Job Role" required
+           pattern="^[A-Za-z\s]{3,}$"
+           title="Job Role must be at least 3 letters and contain only alphabets and spaces">
+
+    <h3>Bank details</h3>
+
+    <input type="text" id="bank-name" placeholder="Bank Name" required
+           pattern="^[A-Za-z\s]{3,}$"
+           title="Bank Name must be at least 3 letters">
+
+    <input type="text" id="branch" placeholder="Branch" required
+           pattern="^[A-Za-z\s]{3,}$"
+           title="Branch must be at least 3 letters">
+
+    <input type="text" id="account-no" placeholder="Account No" required
+           pattern="^\d{6,20}$"
+           minlength="6" maxlength="20"
+           title="Account number must be 6-20 digits">
+
+    <input type="text" id="account-holder" placeholder="Account Holder Name" required>
+    <!-- <input type="text" id="account-holder" placeholder="Account Holder Name" required
+           pattern="^[A-Za-z\s]{3,}$"
+           title="Account Holder name must be at least 3 letters"> -->
+
+    <button type="submit">Add Employees</button>
+</form>
+
         </div>
     </div>
 
+    <script>
+        const form = document.getElementById('add-employee-form');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            if (!form.checkValidity()) {
+                form.reportValidity(); // Triggers native validation messages
+                return;
+            }
+
+            const employee = {
+                name: document.getElementById('emp-name').value,
+                address: document.getElementById('emp-address').value,
+                phone: document.getElementById('emp-phone').value,
+                jobRole: document.getElementById('emp-job').value,
+                bankName: document.getElementById('bank-name').value,
+                branch: document.getElementById('branch').value,
+                accountNo: document.getElementById('account-no').value,
+                accountHolder: document.getElementById('account-holder').value
+            };
+
+            fetch('add_employee.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(employee)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Employee Added Successfully!');
+                    form.reset();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        
+    </script>
+
 </body>
 </html>
-
-<script>
-    document.getElementById('add-employee-form').addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        const employee = {
-            name: document.getElementById('emp-name').value,
-            address: document.getElementById('emp-address').value,
-            phone: document.getElementById('emp-phone').value,
-            jobRole: document.getElementById('emp-job').value,
-            bankName: document.getElementById('bank-name').value,
-            branch: document.getElementById('branch').value,
-            accountNo: document.getElementById('account-no').value,
-            accountHolder: document.getElementById('account-holder').value
-        };
-
-        let employees = JSON.parse(localStorage.getItem('employees')) || [];
-        employees.push(employee);
-        localStorage.setItem('employees', JSON.stringify(employees));
-
-        alert('Employee Added Successfully!');
-        this.reset();
-    });
-</script>
-

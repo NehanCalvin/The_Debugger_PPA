@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Employees</title>
+    <link rel="stylesheet" href="EmpManage.css">
+</head>
+<body>
+    <div class="sidebar">
+        <a href="empDetails.html">Employee details</a>
+        <a href="employee.html">Add Employee</a>
+        <a href="EmpManage.html" class="active">Manage Employees</a>
+        <a href="EmpPayment.html">Employee Payments</a>
+        <a href="EmpReport.html">Reports</a>
+        <a href="admin.html" class="dashboard-btn">Dashboard</a>
+    </div>
+
+    <div class="main-content">
+        <h1>Manage Employee Payments</h1>
+
+        <div class="form-box">
+            <select id="employee-select">
+                <option value="">Select Employee</option>
+            </select>
+
+            <div id="bank-details" style="display: none; margin-top: 15px;">
+                <h3>Bank Details</h3>
+                <p><strong>Bank Name:</strong> <span id="bank-name"></span></p>
+                <p><strong>Branch:</strong> <span id="bank-branch"></span></p>
+                <p><strong>Account No:</strong> <span id="account-no"></span></p>
+                <p><strong>Account Holder:</strong> <span id="account-holder"></span></p>
+            </div>
+
+            <input type="number" id="num-items" placeholder="No of Items">
+            <input type="number" id="price-piece" placeholder="Payment for one piece">
+            <input type="text" id="total-payment" value="Total Payment: Rs. 0" readonly>
+
+            <button id="submit-order">Submit Order</button>
+        </div>
+    </div>
+
+    <script>
+        const select = document.getElementById('employee-select');
+        const bankDetails = document.getElementById('bank-details');
+        const bankName = document.getElementById('bank-name');
+        const bankBranch = document.getElementById('bank-branch');
+        const accountNo = document.getElementById('account-no');
+        const accountHolder = document.getElementById('account-holder');
+        const numItems = document.getElementById('num-items');
+        const pricePiece = document.getElementById('price-piece');
+        const totalPayment = document.getElementById('total-payment');
+        const submitBtn = document.getElementById('submit-order');
+
+        // Load employees into dropdown
+        fetch('load_employees.php')
+            .then(res => res.json())
+            .then(data => {
+                data.forEach(emp => {
+                    const option = document.createElement('option');
+                    option.value = emp.id;
+                    option.textContent = emp.name;
+                    select.appendChild(option);
+                });
+            })
+            .catch(err => console.error('Error loading employees:', err));
+
+        // Fetch and display bank info
+        select.addEventListener('change', function () {
+            if (!this.value) {
+                bankDetails.style.display = 'none';
+                return;
+            }
+
+            fetch(`get_bank_info.php?id=${this.value}`)
+                .then(res => res.json())
+                .then(emp => {
+                    console.log('Bank info:', emp);
+                    if (emp && emp.bank_name) {
+                        bankName.textContent = emp.bank_name;
+                        bankBranch.textContent = emp.branch;
+                        accountNo.textContent = emp.account_no;
+                        accountHolder.textContent = emp.account_holder;
+                        bankDetails.style.display = 'block';
+                    } else {
+                        bankDetails.style.display = 'none';
+                    }
+                })
+                .catch(err => console.error('Error fetching bank info:', err));
+        });
+
+        // Auto-calculate total payment
+        function calculateTotal() {
+            const items = parseFloat(numItems.value) || 0;
+            const price = parseFloat(pricePiece.value) || 0;
+            totalPayment.value = `Total Payment: Rs. ${items * price}`;
+        }
+
+        numItems.addEventListener('input', calculateTotal);
+        pricePiece.addEventListener('input', calculateTotal);
+
+        // Submit payment to database
+        submitBtn.addEventListener('click', () => {
+            const empId = select.value;
+            const items = parseFloat(numItems.value) || 0;
+            const price = parseFloat(pricePiece.value) || 0;
+            const total = items * price;
+
+            if (!empId) return alert("Please select an employee.");
+            if (items <= 0 || price <= 0) return alert("Enter valid number of items and price.");
+
+            fetch('save_payment.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    employee_id: empId,
+                    num_items: items,
+                    price_per_item: price,
+                    total_payment: total
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                numItems.value = '';
+                pricePiece.value = '';
+                totalPayment.value = 'Total Payment: Rs. 0';
+            })
+            .catch(err => console.error(err));
+        });
+    </script>
+</body>
+</html>

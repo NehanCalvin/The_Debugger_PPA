@@ -8,24 +8,24 @@
 </head>
 <body>
 
-    <!-- Sidebar -->
+
     <div class="sidebar">
 
         <a href="empDetails.html">Employee details</a>
         <a href="employee.html">Add Employee</a>
         <a href="ManageEmp.html" class="active">Manage Employees</a>
+         <a href="EmpPayment.html" > Employee Payments</a>
         <a href="EmpReport.html">Reports</a>
         <a href="admin.html" class="dashboard-btn">Dashboard</a>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
         <h1>Manage Employee Payments</h1>
 
         <div class="form-box">
             <select id="employee-select">
                 <option value="">Select Employee</option>
-                <!-- Dynamic options will be loaded here -->
+              
             </select>
 
             <div id="bank-details" style="display: none; margin-top: 15px;">
@@ -44,7 +44,6 @@
         </div>
     </div>
 
-    <!-- JavaScript -->
     <script>
         const employees = JSON.parse(localStorage.getItem('employees')) || [];
         const select = document.getElementById('employee-select');
@@ -55,7 +54,7 @@
         const accountNo = document.getElementById('account-no');
         const accountHolder = document.getElementById('account-holder');
 
-        // Populate employee dropdown
+      
         employees.forEach((emp, index) => {
             const option = document.createElement('option');
             option.value = index;
@@ -74,7 +73,7 @@
                 bankBranch.textContent = emp.branch;
                 accountNo.textContent = emp.accountNo;
                 accountHolder.textContent = emp.accountHolder;
-                bankDetails.style.display = 'block';
+                 bankDetails.style.display = 'block';
             }
         });
     </script>
