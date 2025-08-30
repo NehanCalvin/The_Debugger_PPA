@@ -4,7 +4,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 header('Content-Type: application/json');
 
-// Connect to database
+// Connecting to database
 $conn = new mysqli("localhost", "root", "", "PPA_feedback");
 
 if ($conn->connect_error) {
@@ -12,7 +12,7 @@ if ($conn->connect_error) {
     exit();
 }
 
-// Collect data
+// Collecting data
 $name = $_POST['name'] ?? '';
 $product = $_POST['product'] ?? '';
 $rating = $_POST['rating'] ?? '';
@@ -24,7 +24,7 @@ if (empty($name) || empty($product) || empty($rating)) {
     exit();
 }
 
-// Prepare insert
+// Preparing insert
 $sql = "INSERT INTO feedback (customer_name, product_name, rating, comments) VALUES (?, ?, ?, ?)";
 $stmt = $conn->prepare($sql);
 

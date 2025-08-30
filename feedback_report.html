@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Feedback Report</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body class="bg-gray-900 text-white p-6 font-sans">
+
+  <a href="feedback_admin.html" class="bg-blue-600 px-4 py-2 rounded hover:bg-blue-700 inline-block mb-4">← Back</a>
+
+  <h1 class="text-3xl font-bold mb-6">📊 Customer Feedback Report</h1>
+
+  <!-- Filters and Export Buttons -->
+  <div class="flex flex-wrap items-center gap-4 mb-6">
+    <select id="filterType" class="border rounded px-4 py-2 text-black">
+      <option value="all">All</option>
+      <option value="month">Monthly</option>
+      <option value="year">Yearly</option>
+    </select>
+    <input type="month" id="monthPicker" class="border rounded px-4 py-2 text-black hidden" />
+    <input type="number" id="yearPicker" min="2000" max="2099" step="1" class="border rounded px-4 py-2 text-black hidden" placeholder="Enter Year" />
+
+    <div class="flex-grow"></div>
+
+    <button onclick="exportToExcel()" class="bg-green-500 px-4 py-2 rounded">Export to Excel</button>
+    <button onclick="exportToPDF()" class="bg-red-500 px-4 py-2 rounded">Export to PDF</button>
+  </div>
+
+  <div id="report-container">
+    <!-- Summary Cards -->
+    <div class="flex flex-row gap-4 mb-6 justify-center">
+      <div class="bg-green-700 p-4 rounded shadow text-lg" id="avgRatingCard">⭐ Average Rating: 0</div>
+      <div class="bg-blue-700 p-4 rounded shadow text-lg" id="totalFeedbackCard">📝 Total Feedbacks: 0</div>
+    </div>
+
+    <!-- Chart -->
+    <div class="bg-gray-800 p-4 rounded shadow mb-6">
+      <canvas id="ratingChart"></canvas>
+    </div>
+
+    <!-- Table -->
+    <table id="feedbackTable" class="min-w-full bg-gray-800 text-gray-100 shadow rounded-lg">
+      <thead class="bg-gray-700">
+        <tr>
+          <th class="py-2 px-4 text-left">Customer</th>
+          <th class="py-2 px-4 text-left">Product</th>
+          <th class="py-2 px-4 text-left">Rating</th>
+          <th class="py-2 px-4 text-left">Comment</th>
+          <th class="py-2 px-4 text-left">Date</th>
+        </tr>
+      </thead>
+      <tbody id="feedbackTableBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    let chart;
+    let allFeedbacks = [];
+
+    document.getElementById("filterType").addEventListener("change", function() {
+      document.getElementById("monthPicker").classList.add("hidden");
+      document.getElementById("yearPicker").classList.add("hidden");
+      if (this.value === "month") document.getElementById("monthPicker").classList.remove("hidden");
+      if (this.value === "year") document.getElementById("yearPicker").classList.remove("hidden");
+      renderReport();
+    });
+
+    document.getElementById("monthPicker").addEventListener("change", renderReport);
+    document.getElementById("yearPicker").addEventListener("input", renderReport);
+
+    async function loadFeedback() {
+      const res = await fetch('fetch_feedback.php');
+      allFeedbacks = await res.json();
+      renderReport();
+    }
+
+    function renderReport() {
+      const filterType = document.getElementById("filterType").value;
+      const monthVal = document.getElementById("monthPicker").value;
+      const yearVal = document.getElementById("yearPicker").value;
+
+      let filtered = allFeedbacks.filter(fb => {
+        const date = new Date(fb.submitted_at || fb.date || fb.timestamp);
+        if (filterType === "month" && monthVal) {
+          const [y, m] = monthVal.split("-");
+          return date.getFullYear() === parseInt(y) && date.getMonth()+1 === parseInt(m);
+        }
+        if (filterType === "year" && yearVal) {
+          return date.getFullYear() === parseInt(yearVal);
+        }
+        return true;
+      });
+
+      // Table and Summary
+      const tbody = document.getElementById("feedbackTableBody");
+      tbody.innerHTML = "";
+      const ratingsCount = [0,0,0,0,0];
+      let totalRating = 0;
+
+      filtered.forEach(fb => {
+        const rating = parseInt(fb.rating);
+        ratingsCount[rating-1] +=1;
+        totalRating += rating;
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="py-2 px-4">${fb.customer_name}</td>
+          <td class="py-2 px-4">${fb.product_name}</td>
+          <td class="py-2 px-4">${fb.rating} ⭐</td>
+          <td class="py-2 px-4">${fb.comments}</td>
+          <td class="py-2 px-4">${fb.submitted_at || fb.date || fb.timestamp}</td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      const avgRating = filtered.length ? (totalRating / filtered.length).toFixed(2) : 0;
+      document.getElementById("avgRatingCard").textContent = `⭐ Average Rating: ${avgRating}`;
+      document.getElementById("totalFeedbackCard").textContent = `📝 Total Feedbacks: ${filtered.length}`;
+
+      // Chart
+      const ctx = document.getElementById("ratingChart").getContext("2d");
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["1⭐","2⭐","3⭐","4⭐","5⭐"],
+          datasets: [{ label: "Number of Feedbacks", data: ratingsCount, backgroundColor: "#4ade80" }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+      });
+    }
+
+    async function exportToPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF("p", "mm", "a4");
+      const reportElement = document.getElementById("report-container");
+      const canvas = await html2canvas(reportElement, { scale: 2 });
+      const imgData = canvas.toDataURL("image/png");
+      const imgWidth = 190;
+      const imgHeight = canvas.height * imgWidth / canvas.width;
+      doc.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+      doc.save("Feedback_Report.pdf");
+    }
+
+    // async function exportToExcel() {
+    //   const table = document.getElementById("feedbackTable");
+    //   const wb = XLSX.utils.table_to_book(table, { sheet: "Feedbacks" });
+    //   const chartCanvas = document.getElementById("ratingChart");
+    //   const chartImg = chartCanvas.toDataURL("image/png");
+    //   const ws2 = XLSX.utils.aoa_to_sheet([["Rating Chart"], [chartImg]]);
+    //   XLSX.utils.book_append_sheet(wb, ws2, "Chart");
+    //   XLSX.writeFile(wb, "Feedback_Report.xlsx");
+    // }
+
+    async function exportToExcel() {
+  const table = document.getElementById("feedbackTable");
+  const wb = XLSX.utils.table_to_book(table, { sheet: "Feedbacks", raw: true });
+  XLSX.writeFile(wb, "Feedback_Report.xlsx");
+}
+
+    window.onload = loadFeedback;
+  </script>
+</body>
+</html>

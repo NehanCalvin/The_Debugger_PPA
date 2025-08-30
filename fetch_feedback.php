@@ -2,7 +2,7 @@
 $host = "localhost";
 $user = "root";
 $password = "";
-$dbname = "PPA_feedback"; // your database
+$dbname = "PPA_feedback"; 
 
 $conn = new mysqli($host, $user, $password, $dbname);
 
@@ -10,7 +10,7 @@ if ($conn->connect_error) {
   die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT * FROM feedback";
+$sql = "SELECT * FROM feedback ORDER BY id DESC";
 $result = $conn->query($sql);
 
 $feedbacks = array();

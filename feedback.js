@@ -34,3 +34,4 @@ document.getElementById('feedbackForm').addEventListener('submit', function (e) 
     document.getElementById('responseMsg').textContent = "An error occurred. Please try again.";
   });
 });
+
