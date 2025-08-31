@@ -105,6 +105,7 @@ body {
 #searchBox::placeholder {
   color: #999;
   font-style: italic;
+  text-align: center;
 }
 
 /* Search Icon */
@@ -578,11 +579,6 @@ body {
     flex-direction: column;
     gap: 10px;
     padding: 0 15px;
-  }
-
-  .search-box-container {
-    max-width: none;
-    width: 100%;
   }
 
   #searchBox {

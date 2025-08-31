@@ -117,6 +117,23 @@ body {
     box-shadow: 0 0 5px rgba(255, 65, 108, 0.5);
 }
 
+/* Date input styling for white calendar icons */
+.filter-group input[type="date"] {
+    color-scheme: dark;
+    position: relative;
+}
+
+.filter-group input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(93deg) brightness(103%) contrast(103%);
+    cursor: pointer;
+}
+
+.filter-group input[type="date"]:focus {
+    border-color: #ff416c;
+    outline: none;
+    box-shadow: 0 0 5px rgba(255, 65, 108, 0.5);
+}
+
 /*Report Action Btns*/
 .report-actions {
     display: flex;
