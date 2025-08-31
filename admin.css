@@ -6,12 +6,36 @@
 
 body {
   height: 100vh;
-  background-color: #121212;
+  margin: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
+
+  /* Background */
+  background: url("casey-horner-XE2RmuV6ed0-unsplash.jpg") no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
+  z-index: 0;
 }
+
+/* Dark overlay to make image dull */
+body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(18, 18, 18, 0.75); /* dull overlay */
+  z-index: -1;
+}
+
+
+
+
+
+
 
 /* Loader Styles */
 .loader {

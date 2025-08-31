@@ -5,11 +5,26 @@
   }
   
   body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #1c1c1c;
-    color: #fff;
-    display: flex;
-  }
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: url("WhatsApp\ Image\ 2025-08-30\ at\ 13.31.38.jpeg") no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
+  color: #fff;
+  display: flex;
+}
+
+/* Dark overlay to make image dull */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(28, 28, 28, 0.8); /* dark overlay */
+  z-index: -1;
+}
+
   
   .sidebar {
     width: 220px;
