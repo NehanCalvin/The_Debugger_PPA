@@ -4,87 +4,148 @@
   <meta charset="UTF-8">
   <title>Product Management</title>
   <link rel="stylesheet" href="product.css">
-  <style>
-    .checked-green {
-      background-color: #c8e6c9;
-      padding: 5px;
-      border-radius: 5px;
-      display: inline-block;
-    }
-  </style>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
   <div class="sidebar">
     <a href="create_product.html"><i class="fas fa-plus-circle"></i> Create Product</a>
     <a class="active" href="product.html"><i class="fas fa-chart-line"></i> Products</a>
     <a href="report.html"><i class="fas fa-file-alt"></i> Reports</a>
+      <a href="admin.html" class="dashboard-btn"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
   </div>
 
   <main class="main-content">
     <h2>Product Management</h2>
     <div class="card">
-      <img src="https://i.imgur.com/dv9ZJwM.png" alt="T-shirt">
+      <img src="kfc.webp" alt="T-shirt">
       <div class="info">
-        <p><strong>Product number:</strong> 002</p>
-        <p><strong>Item:</strong> T-Shirt</p>
-        <p><strong>Client:</strong> KFC</p>
-        <p><strong>Size:</strong> S, M, L</p>
-        <p><strong>Quantity:</strong> 20</p>
-        <p><strong>Amount paid:</strong> 10,000.00 LKR</p>
-        
+        <p><strong>Product number:</strong> <span id="pNum">002</span></p>
+        <p><strong>Item:</strong> <span id="pName">T-Shirt</span></p>
+        <p><strong>Client:</strong> <span id="pClient">KFC</span></p>
+        <p><strong>Size:</strong> <span id="pSize">S, M, L</span></p>
+        <p><strong>Quantity:</strong> <span id="pQty">20</span></p>
+        <p><strong>Amount paid:</strong> <span id="pAdvance">10000.00</span> LKR</p>
+
         <div class="payment">
-          <label>
-            <input type="checkbox" class="checkbox" id="paid">
-            Fully paid
-          </label>
-          <label>
-            <input type="checkbox" id="advance">
-            Advance
-          </label>
+          <label><input type="checkbox" class="checkbox" id="paid"> Fully paid</label>
+          <label><input type="checkbox" id="advance"> Advance</label>
         </div>
 
         <div id="advanceInput" style="display: none; margin-top: 10px;">
-          <label>
-            Amount:
-            <input type="number" id="advanceAmount" min="0"> LKR
-          </label>
+          <label>Amount: <input type="number" id="advanceAmount" min="0"> LKR</label>
           <p id="due" class="due-text"></p>
         </div>
 
         <div class="buttons">
-          <button class="edit-btn" onclick="location.href='create_product.html'">Edit</button>
-          <button class="delete-btn">Delete</button>
+          <button type="button" class="edit-btn" id="editButton">Edit</button>
+          <form method="POST" action="delete_product.php" style="display:inline;">
+            <input type="hidden" name="id" value="1">
+            <button type="submit" class="delete-btn">Delete</button>
+          </form>
         </div>
       </div>
     </div>
   </main>
 
+
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="closeModal">&times;</span>
+      <form id="editForm" onsubmit="return false;">
+        <label>Product Number: <input type="text" id="editProductNumber" required></label>
+        <label>Product Name: <input type="text" id="editProductName" required></label>
+        <label>Client: <input type="text" id="editClient" required></label>
+        <label>Size: <input type="text" id="editSize" required></label>
+        <label>Price (LKR): <input type="number" step="0.01" id="editPrice" required></label>
+        <label>Quantity: <input type="number" id="editQuantity" required></label>
+        <label>Fully Paid:
+          <select id="editFullyPaid">
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+          </select>
+        </label>
+        <label>Advance (LKR): <input type="number" step="0.01" id="editAdvance"></label>
+        <button type="submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
   <script>
     const paidCheckbox = document.getElementById("paid");
-    paidCheckbox.addEventListener("change", () => {
-      if (paidCheckbox.checked) {
-        paidCheckbox.parentElement.classList.add("checked-green");
-      } else {
-        paidCheckbox.parentElement.classList.remove("checked-green");
-      }
-    });
-
     const advanceCheckbox = document.getElementById("advance");
     const advanceInput = document.getElementById("advanceInput");
     const advanceAmount = document.getElementById("advanceAmount");
     const dueText = document.getElementById("due");
     const totalAmount = 15000;
 
+    paidCheckbox.addEventListener("change", () => {
+      paidCheckbox.parentElement.classList.toggle("checked-green", paidCheckbox.checked);
+    });
+
     advanceCheckbox.addEventListener("change", () => {
       advanceInput.style.display = advanceCheckbox.checked ? "block" : "none";
-      dueText.textContent = "";
       advanceAmount.value = "";
+      dueText.textContent = "";
     });
 
     advanceAmount.addEventListener("input", () => {
       const paid = parseFloat(advanceAmount.value) || 0;
       const due = totalAmount - paid;
       dueText.textContent = `Due Amount: ${due.toFixed(2)} LKR`;
+    });
+
+    const modal = document.getElementById("editModal");
+    const editBtn = document.getElementById("editButton");
+    const closeModal = document.getElementById("closeModal");
+
+    editBtn.addEventListener("click", () => {
+      document.getElementById("editProductNumber").value = document.getElementById("pNum").textContent.trim();
+      document.getElementById("editProductName").value = document.getElementById("pName").textContent.trim();
+      document.getElementById("editClient").value = document.getElementById("pClient").textContent.trim();
+      document.getElementById("editSize").value = document.getElementById("pSize").textContent.trim();
+      document.getElementById("editQuantity").value = parseInt(document.getElementById("pQty").textContent.trim());
+      document.getElementById("editAdvance").value = parseFloat(document.getElementById("pAdvance").textContent.trim());
+      document.getElementById("editPrice").value = 500; 
+      document.getElementById("editFullyPaid").value = "0";
+      modal.style.display = "block";
+    });
+
+    closeModal.onclick = () => modal.style.display = "none";
+    window.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
+
+    document.getElementById("editForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const data = {
+        product_number: document.getElementById("editProductNumber").value.trim(),
+        product_name: document.getElementById("editProductName").value.trim(),
+        client: document.getElementById("editClient").value.trim(),
+        size: document.getElementById("editSize").value.trim(),
+        price: parseFloat(document.getElementById("editPrice").value),
+        quantity: parseInt(document.getElementById("editQuantity").value),
+        fully_paid: parseInt(document.getElementById("editFullyPaid").value),
+        advance: parseFloat(document.getElementById("editAdvance").value) || 0
+      };
+      data.total_price = data.price * data.quantity;
+
+      try {
+        const response = await fetch("update_product.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          alert("Product updated successfully!");
+          modal.style.display = "none";
+          location.reload();
+        } else {
+          alert("Error: " + (result?.error || "Unknown error"));
+        }
+      } catch (err) {
+        alert("Fetch error: " + err.message);
+      }
     });
   </script>
 </body>

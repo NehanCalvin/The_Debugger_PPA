@@ -1,77 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link rel="stylesheet" href="orders.css"/>
-
-    <title>create_product</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Product</title>
+  <link rel="stylesheet" href="orders.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 <body>
-
-    <div class="sidebar">
-    <h2>Product Management</h2>
-    <ul>
-      <li><a href="create_product.php">Create Product</a></li>
-      <li><a href="product.php">Product</a></li>
-      <li><a href="report.php">Reports</a></li>
-    </ul>
-    <button class="dashboard-btn">Dashboard</button>
+<div class="sidebar">
+    <a href="create_product.html"  class="active"><i class="fas fa-plus-circle"></i> Create Product</a>
+    <a href="product.php"><i class="fas fa-chart-line"></i> Products</a>
+    <a href="report.html"><i class="fas fa-file-alt"></i> Reports</a>
+      <a href="admin.html" class="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
   </div>
+
 
   <div class="main-content">
     <h2>Create Product</h2>
-    <form class="product-form">
-      <label>Product Number
-        <input type="text" placeholder="Enter product number">
-      </label>
-      <label>Product Name
-        <input type="text" placeholder="Enter product name">
-      </label>
-      <label>Client
-        <input type="text" placeholder="Client name">
-      </label>
-      <label>Size
-        <select>
-          <option>Select</option>
-          <option>Free</option>
-          <option>XXS</option>
-          <option>XS</option>
-          <option>S</option>
-          <option>M</option>
-          <option>L</option>
-          <option>XL</option>
-          <option>2XL</option>
-          <option>3XL</option>
-          <option>4XL</option>
 
+    <form class="product-form" action="create_product.php" method="POST" enctype="multipart/form-data">
+      <label>Product Number:
+        <input type="text" name="product_number" required />
+      </label>
+
+      <label>Product Name:
+        <input type="text" name="product_name" required />
+      </label>
+
+      <label>Client:
+        <input type="text" name="client" required />
+      </label>
+
+      <div class="size-dropdown-container" style="position: relative;">
+        <label>Sizes:</label>
+        <div class="multi-select">Select Sizes ▼</div>
+        <div class="dropdown-sizes">
+          <label><input type="checkbox" name="sizes[]" value="Free" />Free <input type="number" class="size-quantity" name="quantity[Free]" min="0" placeholder="Qty" /></label>
+          <label><input type="checkbox" name="sizes[]" value="XS" />XS <input type="number" class="size-quantity" name="quantity[XS]" min="0" placeholder="Qty" /></label>
+          <label><input type="checkbox" name="sizes[]" value="S" />S <input type="number" class="size-quantity" name="quantity[S]" min="0" placeholder="Qty" /></label>
+          <label><input type="checkbox" name="sizes[]" value="M" />M <input type="number" class="size-quantity" name="quantity[M]" min="0" placeholder="Qty" /></label>
+          <label><input type="checkbox" name="sizes[]" value="L" />L <input type="number" class="size-quantity" name="quantity[L]" min="0" placeholder="Qty" /></label>
+          <label><input type="checkbox" name="sizes[]" value="XL" />XL <input type="number" class="size-quantity" name="quantity[XL]" min="0" placeholder="Qty" /></label>
+          <label><input type="checkbox" name="sizes[]" value="XXL" />XXL <input type="number" class="size-quantity" name="quantity[XXL]" min="0" placeholder="Qty" /></label>
+          <label><input type="checkbox" name="sizes[]" value="3XL" />3XL <input type="number" class="size-quantity" name="quantity[3XL]" min="0" placeholder="Qty" /></label>
+          <button type="button" onclick="closeDropdown()">OK</button>
+        </div>
+      </div>
+
+      <label>Price per Item (Rs):
+        <input type="number" name="price" id="pricePerItem" required />
+      </label>
+
+      <div class="total" id="totalPrice">Total Price: Rs. 0</div>
+      <input type="hidden" id="hiddenTotalPrice" name="total_price" value="0" />
+
+      <div class="image-upload">
+        <label>Upload Image:
+          <input type="file" name="product_image" accept="image/*" onchange="previewImage(event)" />
+        </label>
+        <img id="imagePreview" src="#" alt="Preview" style="display:none;" />
+      </div>
+
+      <label>Payment:
+        <select name="payment_option" id="payment_option" required>
+          <option value="">Select</option>
+          <option value="Fully Paid">Fully Paid</option>
+          <option value="Advance">Advance</option>
         </select>
       </label>
-      <label>Price per item (LKR)
-        <input type="price" placeholder="0.00 LKR">
-      </label>
-      <label>Quantity
-        <input type="number" placeholder="0">
-      </label>
-      <p class="total">Total Price : 0.00 LKR</p>
-      <div class="image-upload">
-        <label for="productImage">Upload product image</label>
-        <input type="file" id="productImage" name="productImage" accept="image/*">
-            <img id="preview" alt="Image Preview" />
 
+      <div id="advanceAmountDiv" style="display:none;">
+        <label>Advance Amount (Rs):
+          <input type="number" name="advance" id="advanceAmount" />
+        </label>
       </div>
-      <button class="save-btn">Save Item</button>
+
+      <button class="save-btn" type="submit">Save Product</button>
     </form>
   </div>
 
+  <script>
+    const multiSelect = document.querySelector(".multi-select");
+    const dropdown = document.querySelector(".dropdown-sizes");
+
+    // Toggle dropdown on click
+    multiSelect.addEventListener("click", function(e) {
+      e.stopPropagation(); // Prevent document click from closing it
+      dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener("click", function(e) {
+      if (!dropdown.contains(e.target) && !multiSelect.contains(e.target)) {
+        dropdown.style.display = "none";
+      }
+    });
+
+    // Close dropdown via OK button
+    function closeDropdown() {
+      dropdown.style.display = "none";
+    }
+
+    function previewImage(event) {
+      const image = document.getElementById("imagePreview");
+      image.src = URL.createObjectURL(event.target.files[0]);
+      image.style.display = "block";
+    }
+
+    const priceInput = document.getElementById("pricePerItem");
+    const quantityInputs = document.querySelectorAll(".size-quantity");
+    const hiddenTotalInput = document.getElementById("hiddenTotalPrice");
+
+    function calculateTotal() {
+      const price = parseFloat(priceInput.value) || 0;
+      let totalQty = 0;
+      quantityInputs.forEach(input => {
+        totalQty += parseInt(input.value) || 0;
+      });
+      const totalPrice = price * totalQty;
+      document.getElementById("totalPrice").textContent = `Total Price: Rs. ${totalPrice}`;
+      hiddenTotalInput.value = totalPrice;
+    }
+
+    priceInput.addEventListener("input", calculateTotal);
+    quantityInputs.forEach(input => input.addEventListener("input", calculateTotal));
+
+    document.getElementById("payment_option").addEventListener("change", function () {
+      const advanceDiv = document.getElementById("advanceAmountDiv");
+      if (this.value === "Advance") {
+        advanceDiv.style.display = "block";
+      } else {
+        advanceDiv.style.display = "none";
+        document.getElementById("advanceAmount").value = "";
+      }
+    });
+  </script>
 </body>
 </html>
-
-
-<script>
-  document.getElementById('productImage').addEventListener('change', function(event) {
-    const file = event.target.files[0];
-    const preview = document.getElementById('preview');
-    preview.src = URL.createObjectURL(file);
-  });
-</script>
